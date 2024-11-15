@@ -12,7 +12,7 @@ const onSubmitMock: jest.Mock<LoginFormProps['onSubmit']> = jest.fn();
 describe('LoginForm Form ', () => {
   it('renders correctly', async () => {
     render(<LoginForm />);
-    expect(await screen.findByText(/Sign in/i)).toBeOnTheScreen();
+    expect(await screen.findByText(/Login/i)).toBeOnTheScreen();
   });
 
   it('should display required error when values are empty', async () => {
@@ -59,7 +59,7 @@ describe('LoginForm Form ', () => {
         email: 'youssef@gmail.com',
         password: 'password',
       },
-      undefined
+      undefined,
     );
   });
 });
