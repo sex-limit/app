@@ -1,6 +1,7 @@
 PODS:
   - boost (1.83.0)
   - DoubleConversion (1.1.6)
+  - DouyinOpenSDK (4.1.17)
   - EXConstants (16.0.2):
     - ExpoModulesCore
   - EXJSONUtils (0.13.1)
@@ -1619,6 +1620,7 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
+  - DouyinOpenSDK
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXJSONUtils (from `../node_modules/expo-json-utils/ios`)
   - EXManifests (from `../node_modules/expo-manifests/ios`)
@@ -1705,6 +1707,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - DouyinOpenSDK
     - libavif
     - libdav1d
     - libwebp
@@ -1888,6 +1891,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: d3f49c53809116a5d38da093a8aa78bf551aed09
   DoubleConversion: 76ab83afb40bddeeee456813d9c04f67f78771b5
+  DouyinOpenSDK: 0ae1cce4d2c46b8996ceb4ce13e61b591baa543f
   EXConstants: 409690fbfd5afea964e5e9d6c4eb2c2b59222c59
   EXJSONUtils: 30c17fd9cc364d722c0946a550dfbf1be92ef6a4
   EXManifests: c1fab4c3237675e7b0299ea8df0bcb14baca4f42
@@ -1980,6 +1984,6 @@ SPEC CHECKSUMS:
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   Yoga: 950bbfd7e6f04790fdb51149ed51df41f329fcc8
 
-PODFILE CHECKSUM: 7df853bcf6a07f8b5c0b8c7b19675dec2e3a932a
+PODFILE CHECKSUM: 1dd936c6c9e18a5e443c62c0141db55a891c015b
 
 COCOAPODS: 1.15.2

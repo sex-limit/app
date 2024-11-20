@@ -49,6 +49,9 @@ target 'sexlimit' do
     :privacy_file_aggregation_enabled => podfile_properties['apple.privacyManifestAggregationEnabled'] != 'false',
   )
 
+  # 添加抖音 SDK
+  pod 'DouyinOpenSDK'
+
   post_install do |installer|
     react_native_post_install(
       installer,

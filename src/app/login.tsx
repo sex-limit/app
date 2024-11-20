@@ -1,18 +1,47 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
+import {
+  NativeModules,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { useAuth } from '@/core';
 import { TiktokIcon } from '@/ui/icons/tiktok';
+
+const Douyin = NativeModules.CalendarModule;
 
 const TiktokLogin: React.FC = () => {
   const router = useRouter();
   const signIn = useAuth.use.signIn();
 
-  const handleLogin = () => {
-    signIn({ access: '123', refresh: '123' });
-    router.replace('/');
+  useEffect(() => {
+    Douyin.init('awcve1p71yemc3r7');
+  }, []);
+
+  const handleLogin = async () => {
+    console.log(1);
+    try {
+      console.log('Init success, start login...');
+      const res = await Douyin.login('user_info');
+      console.log('login Success', res);
+    } catch (error) {
+      console.log(error);
+    }
+    // await NativeModules.CalendarModule.createCalendarEvent(
+    //   'Party',
+    //   '04-12-2020',
+    //   (eventId) => {
+    //     console.log(`Created a new event with id ${eventId}`);
+    //   },
+    // );
+
+    // return;
+    // signIn({ access: '123', refresh: '123' });
+    // router.replace('/');
   };
 
   return (
