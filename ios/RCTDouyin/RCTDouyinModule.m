@@ -1,11 +1,17 @@
-#import "RCTCalendarModule.h"
-#import <React/RCTLog.h>
+//
+//  RCTDouyinModule.m
+//  sexlimit
+//
+//  Created by ByteDance on 11/23/24.
+//
+
+#import "RCTDouyinModule.h"
 #import <DouyinOpenSDK/DouyinOpenSDKAuth.h>
+#import <React/RCTLog.h>
 
-@implementation RCTCalendarModule
+@implementation RCTDouyinModule
 
-// 导出模块
-RCT_EXPORT_MODULE();
+RCT_EXPORT_MODULE(DouyinModule);
 
 RCT_EXPORT_METHOD(init:(NSString *)appid
                   resolver:(RCTPromiseResolveBlock)resolve
@@ -32,8 +38,8 @@ RCT_EXPORT_METHOD(login:(NSString *)scope
      [req sendAuthRequestViewController:vc completeBlock:^(DouyinOpenSDKAuthResponse * _Nonnull resp) {
      if (resp.errCode == 0) {
                resolve(@{
-                   @"authCode": resp.code
-                       });
+                   @"code": resp.code
+               });
             } else{
                 [NSString stringWithFormat:@"Author failed code : %@, msg : %@",@(resp.errCode), resp.errString];
                 reject([NSString stringWithFormat:@"%@",@(resp.errCode)],resp.errString,nil);

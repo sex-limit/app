@@ -1,62 +1,57 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
-import {
-  NativeModules,
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React from 'react';
+import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator } from 'react-native-paper';
 
-import { useAuth } from '@/core';
+import { useDouyinLogin } from '@/core/auth/douyin';
 import { TiktokIcon } from '@/ui/icons/tiktok';
 
-const Douyin = NativeModules.CalendarModule;
-
 const TiktokLogin: React.FC = () => {
-  const router = useRouter();
-  const signIn = useAuth.use.signIn();
+  // const router = useRouter();
+  // const signIn = useAuth.use.signIn();
 
-  useEffect(() => {
-    Douyin.init('awcve1p71yemc3r7');
-  }, []);
+  const mutation = useDouyinLogin({
+    onSuccess(data) {
+      console.log(data);
+    },
+  });
 
-  const handleLogin = async () => {
-    console.log(1);
-    try {
-      console.log('Init success, start login...');
-      const res = await Douyin.login('user_info');
-      console.log('login Success', res);
-    } catch (error) {
-      console.log(error);
-    }
-    // await NativeModules.CalendarModule.createCalendarEvent(
-    //   'Party',
-    //   '04-12-2020',
-    //   (eventId) => {
-    //     console.log(`Created a new event with id ${eventId}`);
-    //   },
-    // );
-
-    // return;
-    // signIn({ access: '123', refresh: '123' });
-    // router.replace('/');
+  const onLogin = async () => {
+    mutation.mutate();
   };
 
   return (
-    <TouchableOpacity
-      className={'flex-row justify-center rounded-lg bg-black p-3'}
-      activeOpacity={0.85}
-      onPress={handleLogin}
-    >
-      <View className={'flex-row items-center justify-center'}>
-        <View>
-          <TiktokIcon />
+    <>
+      <TouchableOpacity
+        className={'flex-row justify-center rounded-lg bg-black p-3'}
+        activeOpacity={0.85}
+        onPress={onLogin}
+      >
+        <View className={'flex-row items-center justify-center'}>
+          <View className={'flex-row items-center'}>
+            {mutation.isPending && (
+              <View
+                className={
+                  'relative flex items-center justify-center bg-slate-100'
+                }
+              >
+                <View className={'absolute right-4'}>
+                  <ActivityIndicator
+                    size={15}
+                    color={'rgba(255, 255, 255, 0.6)'}
+                  />
+                </View>
+              </View>
+            )}
+            <View>
+              <TiktokIcon />
+            </View>
+            <Text className={'ml-3 text-lg text-white'}>抖音登录</Text>
+          </View>
         </View>
-        <Text className={'ml-1 text-lg text-white'}>抖音登录</Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </>
   );
 };
 
@@ -108,7 +103,7 @@ export default function Login() {
           </Text>
         </View>
       </View>
-      <View className={'space-y-2 px-4 pb-10'}>
+      <View className={'space-y-2 px-[5vw] pb-10'}>
         <TiktokLogin />
         <PhoneLogin />
       </View>

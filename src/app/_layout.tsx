@@ -4,7 +4,7 @@ import '../../global.css';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import { SplashScreen, Stack } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import FlashMessage from 'react-native-flash-message';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -13,6 +13,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { APIProvider } from '@/api';
 import { hydrateAuth, loadSelectedTheme } from '@/core';
 import { useThemeConfig } from '@/core/use-theme-config';
+import Douyin from '@/shared/native-module/douyin';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -27,6 +28,10 @@ SplashScreen.preventAutoHideAsync();
 
 function Providers({ children }: { children: React.ReactNode }) {
   const theme = useThemeConfig();
+
+  useEffect(() => {
+    Douyin.init('awcve1p71yemc3r7');
+  }, []);
   return (
     <GestureHandlerRootView
       style={styles.container}
