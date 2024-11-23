@@ -46,7 +46,6 @@
     "app-icon-badge": "^0.0.15",
     "axios": "^1.7.5",
     "clsx": "^2.1.1",
-    "douyin-opensdk-rn": "^0.2.3",
     "expo": "~51.0.31",
     "expo-constants": "~16.0.2",
     "expo-dev-client": "~4.0.25",
