@@ -22,15 +22,19 @@ jobs:
   lint:
     name: Lint TS (eslint, prettier)
     runs-on: ubuntu-latest
-
+    permissions:
+      checks: write
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - name: 📦 Checkout project repo
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: 📦 Setup Node + PNPM + install deps
-        uses: ./.github/actions/setup-node-pnpm-install
+      - name: 📦 Setup Bun + install deps
+        uses: ./.github/actions/setup-bun-install
 
       - name: 🏃‍♂️ Run ESLint PR
         if: github.event_name == 'pull_request'
@@ -42,4 +46,4 @@ jobs:
 
       - name: 🏃‍♂️ Run ESLint PR
         if: github.event_name != 'pull_request'
-        run: pnpm run lint
+        run: bun run lint

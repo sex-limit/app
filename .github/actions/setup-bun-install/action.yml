@@ -5,25 +5,20 @@
 # ✍️ Description:
 # This is a composite action, which means it can be used in other actions.
 # It is used in almost all workflows to set up the environment and install dependencies.
-# Updating  the package manager or Node version here will be reflected in all workflows.
+# Updating the Bun version here will be reflected in all workflows.
 
 # 👀 Example usage:
-#       - name : 📦 Setup Node + PNPM + install deps
-#         uses: ./.github/actions/setup-node-pnpm-install
+#       - name : 📦 Setup Bun + install deps
+#         uses: ./.github/actions/setup-bun-install
 
-name: 'Setup  Node + PNPM + Install Dependencies'
-description: 'Setup  Node + PNPM + Install Dependencies'
+name: 'Setup Bun + Install Dependencies'
+description: 'Setup Bun + Install Dependencies'
 runs:
   using: 'composite'
   steps:
-    - uses: pnpm/action-setup@v4
+    - uses: oven-sh/setup-bun@v2
       with:
-        run_install: false
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: 'pnpm'
-
+        bun-version: 1.1.34
     - name: 📦 Install Project Dependencies
-      run: pnpm install --frozen-lockfile
+      run: bun install --frozen-lockfile
       shell: bash
