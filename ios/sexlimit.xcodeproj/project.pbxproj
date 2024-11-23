@@ -10,7 +10,6 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		2B47198E2CEDD25A0087195E /* RCTCalendarModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B47198D2CEDD25A0087195E /* RCTCalendarModule.m */; };
 		2F8514376CDF485EB4D127C6 /* Inter.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 86DD165D68BB411C8E36A81E /* Inter.ttf */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		96905EF65AED1B983A6B3ABC /* libPods-sexlimit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58EEBF8E8E6FB1BC6CAF49B5 /* libPods-sexlimit.a */; };
@@ -28,8 +27,6 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = sexlimit/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = sexlimit/main.m; sourceTree = "<group>"; };
 		196B32F173DC4B838DA3593A /* sexlimit-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "sexlimit-Bridging-Header.h"; path = "sexlimit/sexlimit-Bridging-Header.h"; sourceTree = "<group>"; };
-		2B47198C2CEDD25A0087195E /* RCTCalendarModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTCalendarModule.h; sourceTree = "<group>"; };
-		2B47198D2CEDD25A0087195E /* RCTCalendarModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTCalendarModule.m; sourceTree = "<group>"; };
 		2E5B061012724E219B755BC1 /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "sexlimit/noop-file.swift"; sourceTree = "<group>"; };
 		58EEBF8E8E6FB1BC6CAF49B5 /* libPods-sexlimit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-sexlimit.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C2E3173556A471DD304B334 /* Pods-sexlimit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-sexlimit.debug.xcconfig"; path = "Target Support Files/Pods-sexlimit/Pods-sexlimit.debug.xcconfig"; sourceTree = "<group>"; };
@@ -71,15 +68,6 @@
 			name = sexlimit;
 			sourceTree = "<group>";
 		};
-		2B47198B2CEDD2120087195E /* RCTCalendarModule */ = {
-			isa = PBXGroup;
-			children = (
-				2B47198D2CEDD25A0087195E /* RCTCalendarModule.m */,
-				2B47198C2CEDD25A0087195E /* RCTCalendarModule.h */,
-			);
-			path = RCTCalendarModule;
-			sourceTree = "<group>";
-		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -99,7 +87,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				2B47198B2CEDD2120087195E /* RCTCalendarModule */,
 				13B07FAE1A68108700A75B9A /* sexlimit */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
@@ -350,7 +337,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2B47198E2CEDD25A0087195E /* RCTCalendarModule.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
@@ -369,7 +355,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = sexlimit/sexlimit.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YW6V3M47AQ;
+				DEVELOPMENT_TEAM = WDF5V4WH3C;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -414,7 +400,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = sexlimit/sexlimit.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YW6V3M47AQ;
+				DEVELOPMENT_TEAM = WDF5V4WH3C;
 				INFOPLIST_FILE = sexlimit/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "sex-limit";
 				INFOPLIST_KEY_UILaunchStoryboardName = SplashScreen;
