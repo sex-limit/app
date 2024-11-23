@@ -21,6 +21,16 @@
 				<string>exp+obytesapp</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>douyin</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>awcve1p71yemc3r7</string>
+			</array>
+		</dict>
 	</array>
 	<key>DouyinAppId</key>
 	<string>awcve1p71yemc3r7</string>
