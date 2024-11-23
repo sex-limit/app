@@ -22,7 +22,11 @@ jobs:
   lint:
     name: Lint TS (eslint, prettier)
     runs-on: ubuntu-latest
-
+    permissions:
+      checks: write
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - name: 📦 Checkout project repo
         uses: actions/checkout@v3
