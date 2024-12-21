@@ -26,6 +26,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: Env.BUNDLE_ID,
+    usesAppleSignIn: true,
   },
   experiments: {
     typedRoutes: true,
@@ -68,6 +69,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         ],
       },
     ],
+    ['expo-apple-authentication'],
   ],
   extra: {
     ...ClientEnv,

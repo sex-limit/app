@@ -1,4 +1,3 @@
-import { Redirect } from 'expo-router';
 import React, { useState } from 'react';
 import {
   FlatList,
@@ -17,8 +16,6 @@ function CheckInInfo() {
     setDaysCheckedIn(daysCheckedIn + 1);
     // Add more logic for handling check-in here
   };
-
-  return <Redirect href="/login" />;
 
   return (
     <View className={'items-center p-4'}>

@@ -1,111 +1,53 @@
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
 import React from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
 
-import { useDouyinLogin } from '@/core/auth/douyin';
-import { TiktokIcon } from '@/ui/icons/tiktok';
-
-const TiktokLogin: React.FC = () => {
-  // const router = useRouter();
-  // const signIn = useAuth.use.signIn();
-
-  const mutation = useDouyinLogin({
-    onSuccess(data) {
-      console.log(data);
-    },
-  });
-
-  const onLogin = async () => {
-    mutation.mutate();
-  };
-
-  return (
-    <>
-      <TouchableOpacity
-        className={'flex-row justify-center rounded-lg bg-black p-3'}
-        activeOpacity={0.85}
-        onPress={onLogin}
-      >
-        <View className={'flex-row items-center justify-center'}>
-          <View className={'flex-row items-center'}>
-            {mutation.isPending && (
-              <View
-                className={
-                  'relative flex items-center justify-center bg-slate-100'
-                }
-              >
-                <View className={'absolute right-4'}>
-                  <ActivityIndicator
-                    size={15}
-                    color={'rgba(255, 255, 255, 0.6)'}
-                  />
-                </View>
-              </View>
-            )}
-            <View>
-              <TiktokIcon />
-            </View>
-            <Text className={'ml-3 text-lg text-white'}>抖音登录</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </>
-  );
-};
-
-const PhoneLogin: React.FC = () => {
-  const router = useRouter();
-
-  const handleLogin = () => {
-    router.push('/(app)');
-  };
-
-  return (
-    <TouchableOpacity
-      className={
-        'mt-2 flex-row justify-center rounded-lg bg-button-secondary p-3'
-      }
-      activeOpacity={0.85}
-      onPress={handleLogin}
-    >
-      <View className={'flex-row items-center justify-center'}>
-        <Text className={'ml-1 text-lg text-black/80'}>手机号登录</Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
+import { AppleLogin } from '@/components/login/Apple';
+import { PhoneLogin } from '@/components/login/Phone';
+import { TiktokLogin } from '@/components/login/Tiktok';
 
 export default function Login() {
-  const router = useRouter();
-
   return (
-    <SafeAreaView className={'flex-1'}>
-      <View className={'flex-row justify-end p-4'}>
-        <TouchableOpacity
-          onPress={() => router.push('/settings')}
-          activeOpacity={0.85}
-        >
-          <Text className={'text-lg text-black/80'}>帮助与反馈</Text>
-        </TouchableOpacity>
-      </View>
-      <View className={'flex-1'}>
-        <View className={'flex-row items-center justify-center'}>
+    <SafeAreaView className={'flex h-screen flex-1 flex-col bg-white'}>
+      <View className={'h-full justify-between'}>
+        <View className={'mt-8 items-center justify-center'}>
           <Image
-            className={'h-64 w-64'}
+            className={'h-24 w-24 rounded-2xl'}
             source={require('@/ui/assets/logo/logo.png')}
           />
+          <Text className={'mt-4 text-2xl font-bold'}>鲁国</Text>
+          <Text className={'mt-2 text-gray-500'}>一句宣传语在这里</Text>
         </View>
-        <View className={'mt-4 flex-row items-center justify-center'}>
-          <Text className={'text-center text-lg'}>
-            埃及吧干啥干啥，速速登录开🦌
-          </Text>
+
+        <View className={'flex flex-col gap-y-4'}>
+          <View className={'mt-auto space-y-3 px-[5vw]'}>
+            <TiktokLogin />
+            <PhoneLogin />
+          </View>
+
+          <View className={'flex flex-row justify-center gap-x-4 pb-12'}>
+            <AppleLogin />
+            <TouchableOpacity className={'items-center'}>
+              <View
+                className={
+                  'h-12 w-12 items-center justify-center rounded-full bg-gray-100'
+                }
+              >
+                <Text className={'text-xl'}>···</Text>
+              </View>
+              <Text className={'mt-1 text-xs text-gray-500'}>找回账号</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View className={'flex-row justify-center'}>
+            <Text className={'text-xs text-gray-400'}>
+              我们的服务依赖于抖音、苹果、手机账号登录，请阅读
+            </Text>
+            <TouchableOpacity>
+              <Text className={'text-xs text-blue-500'}>用户登录指引协议</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <View className={'space-y-2 px-[5vw] pb-10'}>
-        <TiktokLogin />
-        <PhoneLogin />
       </View>
     </SafeAreaView>
   );

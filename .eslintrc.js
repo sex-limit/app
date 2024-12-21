@@ -14,7 +14,7 @@ module.exports = {
   },
   rules: {
     'unicorn/filename-case': [
-      'error',
+      'off',
       {
         case: 'kebabCase',
         ignore: ['/android', '/ios'],
