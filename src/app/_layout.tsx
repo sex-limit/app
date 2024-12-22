@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import { APIProvider } from '@/api';
@@ -30,23 +31,26 @@ function Providers({ children }: { children: React.ReactNode }) {
   const theme = useThemeConfig();
 
   useEffect(() => {
-    Douyin.init('awcve1p71yemc3r7');
+    Douyin?.init('awcve1p71yemc3r7');
   }, []);
+
   return (
     <GestureHandlerRootView
       style={styles.container}
       className={theme.dark ? `dark` : undefined}
     >
-      <KeyboardProvider>
-        <ThemeProvider value={theme}>
-          <APIProvider>
-            <BottomSheetModalProvider>
-              {children}
-              <Toast />
-            </BottomSheetModalProvider>
-          </APIProvider>
-        </ThemeProvider>
-      </KeyboardProvider>
+      <SafeAreaProvider>
+        <KeyboardProvider>
+          <ThemeProvider value={theme}>
+            <APIProvider>
+              <BottomSheetModalProvider>
+                {children}
+                <Toast />
+              </BottomSheetModalProvider>
+            </APIProvider>
+          </ThemeProvider>
+        </KeyboardProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

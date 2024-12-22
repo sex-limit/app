@@ -1,12 +1,22 @@
-export * from './arrow-right';
-export * from './caret-down';
-export * from './feed';
-export * from './github';
-export * from './home';
-export * from './language';
-export * from './rate';
-export * from './settings';
-export * from './share';
-export * from './style';
-export * from './support';
-export * from './website';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+interface IconProps {
+  color: string;
+  size?: number;
+}
+
+export const HomeIcon = ({ color, size = 24 }: IconProps) => (
+  <Icon name="home-outline" size={size} color={color} />
+);
+
+export const CommunityIcon = ({ color, size = 24 }: IconProps) => (
+  <Icon name="account-group-outline" size={size} color={color} />
+);
+
+export const MessageIcon = ({ color, size = 24 }: IconProps) => (
+  <Icon name="message-outline" size={size} color={color} />
+);
+
+export const ProfileIcon = ({ color, size = 24 }: IconProps) => (
+  <Icon name="account-outline" size={size} color={color} />
+);

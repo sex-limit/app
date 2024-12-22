@@ -1,12 +1,20 @@
 import { Image } from 'expo-image';
+import { Redirect } from 'expo-router';
 import React from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 import { AppleLogin } from '@/components/login/Apple';
 import { PhoneLogin } from '@/components/login/Phone';
 import { TiktokLogin } from '@/components/login/Tiktok';
+import { useAuth } from '@/core/auth';
 
 export default function Login() {
+  const status = useAuth.use.status();
+
+  if (status === 'signIn') {
+    return <Redirect href="/" />;
+  }
+
   return (
     <SafeAreaView className={'flex h-screen flex-1 flex-col bg-white'}>
       <View className={'h-full justify-between'}>

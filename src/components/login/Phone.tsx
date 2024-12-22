@@ -1,10 +1,16 @@
 import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { useAuth } from '@/core/auth';
+
 export const PhoneLogin: React.FC = () => {
   const router = useRouter();
+  const signIn = useAuth.use.signIn();
 
   const handleLogin = () => {
+    signIn({
+      token: 'token',
+    });
     router.push('/(app)');
   };
 
