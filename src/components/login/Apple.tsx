@@ -17,7 +17,7 @@ export const AppleLogin = () => {
       signIn({
         token: data?.token,
       });
-      router.push('/(app)');
+      router.push('/(tabs)');
     },
     onError: (error) => {
       console.log(error);

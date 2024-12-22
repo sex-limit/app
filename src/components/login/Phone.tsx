@@ -11,7 +11,7 @@ export const PhoneLogin: React.FC = () => {
     signIn({
       token: 'token',
     });
-    router.push('/(app)');
+    router.push('/(tabs)');
   };
 
   return (

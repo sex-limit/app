@@ -3,12 +3,12 @@ import { Image } from 'expo-image';
 import React, { useCallback, useState } from 'react';
 import {
   Animated,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const StatCard = ({
   value,
@@ -325,12 +325,12 @@ export default function HomePage() {
     <>
       <View className="absolute h-screen w-full rounded-2xl bg-black/5">
         <Image
-          className="h-1/2 w-full rounded-2xl"
+          className="h-1/2 w-full rounded-b-2xl"
           source={require('@/ui/assets/image/home-bg.png')}
         />
       </View>
-      <SafeAreaView className="relative z-10 flex-1">
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <SafeAreaView className="relative z-10 flex-1" style={{ flex: 1 }}>
           {/* Profile Section */}
           <View className="items-center pt-4">
             <Image
@@ -407,8 +407,8 @@ export default function HomePage() {
           </View>
 
           <View className="h-20" />
-        </ScrollView>
-      </SafeAreaView>
+        </SafeAreaView>
+      </ScrollView>
     </>
   );
 }
