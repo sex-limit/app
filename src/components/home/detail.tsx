@@ -283,7 +283,7 @@ const YearCalendar = ({
   );
 };
 
-export default function Home() {
+export default function PlanDetailPage() {
   const today = new Date();
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());

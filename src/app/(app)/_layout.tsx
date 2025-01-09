@@ -1,6 +1,5 @@
-import { SplashScreen } from 'expo-router';
+import { SplashScreen, Stack } from 'expo-router';
 import React, { useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/core';
 
@@ -11,5 +10,9 @@ export default function TabLayout() {
     SplashScreen.hideAsync();
   }, []);
 
-  return <SafeAreaView style={{ flex: 1 }}></SafeAreaView>;
+  return (
+    <Stack>
+      <Stack.Screen name="plan-detail" options={{ headerShown: false }} />
+    </Stack>
+  );
 }
