@@ -330,84 +330,83 @@ export default function Home() {
         />
       </View>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <SafeAreaView className="relative z-10 flex-1" style={{ flex: 1 }}>
-          {/* Profile Section */}
-          <View className="items-center pt-4">
-            <Image
-              source={{ uri: 'https://i.pravatar.cc/300' }}
-              className="h-20 w-20 rounded-2xl bg-gray-200"
-            />
-            <Text className="mt-2 text-xl font-bold">黄子韬call me粉</Text>
-            <Text className="mt-1 text-sm text-[#666666]">
-              🎯 你已累计打卡慈慈 {checkedDays.size} 天
-            </Text>
-          </View>
-
-          {/* Action Buttons */}
-          {/* <View className="mt-4 flex-row justify-center gap-3 px-4">
-            <TouchableOpacity className="flex-1 rounded-full bg-white py-3">
-              <Text className="text-center text-base">慈慈打卡</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="flex-1 rounded-full border border-[#8AB86E] bg-transparent py-3">
-              <Text className="text-center text-base text-[#8AB86E]">
-                戒瘾打卡
+        <SafeAreaView className="z-10 flex-1" style={{ flex: 1 }}>
+          <View className={'flex h-full flex-1 flex-col'}>
+            {/* Profile Section */}
+            <View className="items-center pt-4">
+              <Image
+                source={{ uri: 'https://i.pravatar.cc/300' }}
+                className="h-20 w-20 rounded-2xl bg-gray-200"
+              />
+              <Text className="mt-2 text-xl font-bold">黄子韬call me粉</Text>
+              <Text className="mt-1 text-sm text-[#666666]">
+                🎯 你已累计打卡慈慈 {checkedDays.size} 天
               </Text>
-            </TouchableOpacity>
-          </View> */}
+            </View>
 
-          {/* Stats Section */}
-          <View className="mx-4 mt-4 rounded-2xl border border-[#8AB86E] bg-white p-4">
-            <View className="flex-row justify-around">
-              <StatCard
-                value="30"
-                label="累计总数"
-                icon={
-                  <MaterialCommunityIcons
-                    name="chart-bar"
-                    size={20}
-                    color="#666"
-                  />
-                }
-              />
-              <StatCard
-                value="3"
-                label="上周日均"
-                icon={
-                  <MaterialCommunityIcons
-                    name="chart-timeline-variant"
-                    size={20}
-                    color="#666"
-                  />
-                }
-              />
-              <StatCard
-                value="4"
-                label="单日最高"
-                icon={
-                  <MaterialCommunityIcons
-                    name="trending-up"
-                    size={20}
-                    color="#666"
-                  />
-                }
+            {/* Stats Section */}
+            <View className="mx-4 mt-4 rounded-2xl border border-[#8AB86E] bg-white p-4">
+              <View className="flex-row justify-around">
+                <StatCard
+                  value="30"
+                  label="累计总数"
+                  icon={
+                    <MaterialCommunityIcons
+                      name="chart-bar"
+                      size={20}
+                      color="#666"
+                    />
+                  }
+                />
+                <StatCard
+                  value="3"
+                  label="上周日均"
+                  icon={
+                    <MaterialCommunityIcons
+                      name="chart-timeline-variant"
+                      size={20}
+                      color="#666"
+                    />
+                  }
+                />
+                <StatCard
+                  value="4"
+                  label="单日最高"
+                  icon={
+                    <MaterialCommunityIcons
+                      name="trending-up"
+                      size={20}
+                      color="#666"
+                    />
+                  }
+                />
+              </View>
+            </View>
+
+            {/* Calendar Section */}
+            <View className="mx-4 mt-4 rounded-2xl bg-white p-4">
+              <YearCalendar
+                year={currentYear}
+                month={currentMonth}
+                onPrevMonth={handlePrevMonth}
+                onNextMonth={handleNextMonth}
+                checkedDays={checkedDays}
+                onToggleDay={handleToggleDay}
               />
             </View>
           </View>
-
-          {/* Calendar Section */}
-          <View className="mx-4 mt-4 rounded-2xl bg-white p-4">
-            <YearCalendar
-              year={currentYear}
-              month={currentMonth}
-              onPrevMonth={handlePrevMonth}
-              onNextMonth={handleNextMonth}
-              checkedDays={checkedDays}
-              onToggleDay={handleToggleDay}
-            />
-          </View>
-
-          <View className="h-20" />
         </SafeAreaView>
+        <TouchableOpacity
+          activeOpacity={0.6}
+          className="absolute bottom-[-20px] left-1/2 z-20 -translate-x-1/2 flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm"
+        >
+          <MaterialCommunityIcons
+            name="swap-horizontal"
+            size={20}
+            color="#666"
+          />
+          <Text className="ml-1">切换模式</Text>
+        </TouchableOpacity>
       </ScrollView>
     </>
   );
