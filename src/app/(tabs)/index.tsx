@@ -336,7 +336,7 @@ export default function Home() {
 
   return (
     <>
-      <View className="absolute h-screen w-full rounded-2xl bg-black/5">
+      <View className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]">
         <Image
           className="h-1/2 w-full rounded-b-2xl"
           source={require('@/ui/assets/image/home-bg.png')}
@@ -409,18 +409,14 @@ export default function Home() {
             </View>
           </View>
         </SafeAreaView>
-        <TouchableOpacity
-          activeOpacity={0.6}
-          className="absolute bottom-[-20px] left-1/2 z-20 -translate-x-1/2 flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm"
-        >
-          <MaterialCommunityIcons
-            name="swap-horizontal"
-            size={20}
-            color="#666"
-          />
-          <Text className="ml-1">切换模式</Text>
-        </TouchableOpacity>
       </ScrollView>
+      <TouchableOpacity
+        activeOpacity={0.6}
+        className="absolute bottom-[20px] left-1/2 z-20 -translate-x-1/2 flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm"
+      >
+        <MaterialCommunityIcons name="swap-horizontal" size={20} color="#666" />
+        <Text className="ml-1">切换模式</Text>
+      </TouchableOpacity>
     </>
   );
 }
