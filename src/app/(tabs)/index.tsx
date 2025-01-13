@@ -3,6 +3,8 @@ import { Image } from 'expo-image';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Animated,
+  Dimensions,
+  PanResponder,
   ScrollView,
   StatusBar,
   Text,
@@ -166,7 +168,7 @@ const MonthCalendar = ({
   const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 grow-0 basis-1">
       {/* Weekday headers */}
       <View className="mb-2 flex-row">
         {weekDays.map((day, index) => (
@@ -212,8 +214,52 @@ const YearCalendar = ({
   checkedDays: Set<string>;
   onToggleDay: (day: number) => void;
 }) => {
+  const [monthViewTranslateX] = useState(new Animated.Value(0));
+  const displayWidth = Dimensions.get('window').width - 56;
+
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      return Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+    },
+    onPanResponderMove: Animated.event([null, { dx: monthViewTranslateX }], {
+      useNativeDriver: false,
+    }),
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx > 50) {
+        Animated.timing(monthViewTranslateX, {
+          toValue: displayWidth,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          onPrevMonth();
+          monthViewTranslateX.setValue(0);
+        });
+      } else if (gestureState.dx < -50) {
+        Animated.timing(monthViewTranslateX, {
+          toValue: -displayWidth,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          onNextMonth();
+          monthViewTranslateX.setValue(0);
+        });
+      } else {
+        Animated.spring(monthViewTranslateX, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  });
+
+  const prevMonth = month === 0 ? 11 : month - 1;
+  const nextMonth = month === 11 ? 0 : month + 1;
+  const prevYear = month === 0 ? year - 1 : year;
+  const nextYear = month === 11 ? year + 1 : year;
+
   return (
-    <View className={'w-full'}>
+    <View className="w-full overflow-hidden">
+      {/* Month Header */}
       <View className="mb-6 flex-row items-center justify-between">
         <View className="flex-row items-center">
           <Text className="text-xl font-medium">
@@ -228,7 +274,15 @@ const YearCalendar = ({
         </View>
         <View className="flex-row gap-2">
           <TouchableOpacity
-            onPress={onPrevMonth}
+            onPress={() => {
+              Animated.spring(monthViewTranslateX, {
+                toValue: displayWidth,
+                useNativeDriver: true,
+              }).start(() => {
+                onPrevMonth();
+                monthViewTranslateX.setValue(0);
+              });
+            }}
             className="h-12 w-12 items-center justify-center rounded-lg bg-[#f5f5f5]"
           >
             <MaterialCommunityIcons
@@ -238,7 +292,15 @@ const YearCalendar = ({
             />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={onNextMonth}
+            onPress={() => {
+              Animated.spring(monthViewTranslateX, {
+                toValue: -displayWidth,
+                useNativeDriver: true,
+              }).start(() => {
+                onNextMonth();
+                monthViewTranslateX.setValue(0);
+              });
+            }}
             className="h-12 w-12 items-center justify-center rounded-lg bg-[#f5f5f5]"
           >
             <MaterialCommunityIcons
@@ -250,12 +312,40 @@ const YearCalendar = ({
         </View>
       </View>
 
-      <MonthCalendar
-        year={year}
-        month={month}
-        checkedDays={checkedDays}
-        onToggleDay={onToggleDay}
-      />
+      <Animated.View
+        style={{
+          flexDirection: 'row',
+          width: '300%',
+          transform: [{ translateX: monthViewTranslateX }],
+          marginLeft: '-100%',
+        }}
+        {...panResponder.panHandlers}
+      >
+        <View style={{ width: '33.33%' }}>
+          <MonthCalendar
+            year={prevYear}
+            month={prevMonth}
+            checkedDays={checkedDays}
+            onToggleDay={onToggleDay}
+          />
+        </View>
+        <View style={{ width: '33.33%' }}>
+          <MonthCalendar
+            year={year}
+            month={month}
+            checkedDays={checkedDays}
+            onToggleDay={onToggleDay}
+          />
+        </View>
+        <View style={{ width: '33.33%' }}>
+          <MonthCalendar
+            year={nextYear}
+            month={nextMonth}
+            checkedDays={checkedDays}
+            onToggleDay={onToggleDay}
+          />
+        </View>
+      </Animated.View>
 
       {/* Stats Row */}
       <View className="mt-8 flex-row justify-between">
@@ -397,7 +487,7 @@ export default function Home() {
             </View>
 
             {/* Calendar Section */}
-            <View className="mx-4 mt-4 rounded-2xl bg-white p-4">
+            <View className="mx-4 mb-20 mt-4 rounded-2xl bg-white p-4">
               <YearCalendar
                 year={currentYear}
                 month={currentMonth}
