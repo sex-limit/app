@@ -1,6 +1,12 @@
 import { Image } from 'expo-image';
 import React from 'react';
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Platform,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { AppleLogin } from '@/components/login/Apple';
 import { PhoneLogin } from '@/components/login/Phone';
@@ -9,7 +15,7 @@ import { useAuth } from '@/core/auth';
 
 export default function Login() {
   const status = useAuth.use.status();
-
+  const platform = Platform.OS;
   return (
     <SafeAreaView className={'flex h-screen flex-1 flex-col bg-white'}>
       <View className={'h-full justify-between'}>
@@ -29,7 +35,8 @@ export default function Login() {
           </View>
 
           <View className={'flex flex-row justify-center gap-x-4 pb-12'}>
-            <AppleLogin />
+            {platform === 'ios' && <AppleLogin />}
+
             <TouchableOpacity className={'items-center'}>
               <View
                 className={
