@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { getDaysInMonth, getFirstDayOfMonth } from '@/utils/date';
+
 const StatCard = ({
   value,
   label,
@@ -110,15 +112,6 @@ const CalendarDay = ({
       </Animated.View>
     </TouchableOpacity>
   );
-};
-
-// Helper functions remain the same
-const getDaysInMonth = (year: number, month: number) => {
-  return new Date(year, month + 1, 0).getDate();
-};
-
-const getFirstDayOfMonth = (year: number, month: number) => {
-  return new Date(year, month, 1).getDay();
 };
 
 const MonthCalendar = ({
