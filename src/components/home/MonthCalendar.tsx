@@ -50,7 +50,7 @@ export const MonthCalendar = ({
   const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
 
   return (
-    <View className="flex-1 grow-0 basis-1">
+    <View className="flex-1 grow-0 basis-1" style={{ height: 336 }}>
       <View className="mb-2 flex-row">
         {weekDays.map((day, index) => (
           <View
