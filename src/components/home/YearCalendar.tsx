@@ -1,6 +1,5 @@
-import { useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import {
-  Animated,
   Dimensions,
   PanResponder,
   ScrollView,
@@ -8,6 +7,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { getDaysInMonth } from '@/utils/date';
@@ -24,102 +31,21 @@ interface YearCalendarProps {
   onToggleDay: (day: number) => void;
 }
 
-export const YearCalendar = ({
-  year,
-  month,
-  onPrevMonth,
-  onNextMonth,
-  onJumpTo,
-  checkedDays,
-  onToggleDay,
-}: YearCalendarProps) => {
-  const [monthViewTranslateX] = useState(new Animated.Value(0));
-  const displayWidth = Dimensions.get('window').width - 56;
-  const [isYearPickerVisible, setYearPickerVisible] = useState(false);
-  const [isMonthPickerVisible, setMonthPickerVisible] = useState(false);
-  const selectedYear = useRef(year);
-  const selectedMonth = useRef(month);
-  const [yearPickerOpacity] = useState(new Animated.Value(0));
-  const [monthPickerOpacity] = useState(new Animated.Value(0));
-
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) => {
-      return Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-    },
-    onPanResponderMove: Animated.event([null, { dx: monthViewTranslateX }], {
-      useNativeDriver: false,
-    }),
-    onPanResponderRelease: (_, gestureState) => {
-      if (gestureState.dx > 50) {
-        Animated.timing(monthViewTranslateX, {
-          toValue: displayWidth,
-          duration: 200,
-          useNativeDriver: true,
-        }).start(() => {
-          onPrevMonth();
-          monthViewTranslateX.setValue(0);
-        });
-      } else if (gestureState.dx < -50) {
-        Animated.timing(monthViewTranslateX, {
-          toValue: -displayWidth,
-          duration: 200,
-          useNativeDriver: true,
-        }).start(() => {
-          onNextMonth();
-          monthViewTranslateX.setValue(0);
-        });
-      } else {
-        Animated.spring(monthViewTranslateX, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  });
-
-  const prevMonth = month === 0 ? 11 : month - 1;
-  const nextMonth = month === 11 ? 0 : month + 1;
-  const prevYear = month === 0 ? year - 1 : year;
-  const nextYear = month === 11 ? year + 1 : year;
-
-  const handleYearSelect = (newYear: number) => {
-    selectedYear.current = newYear;
-    setYearPickerVisible(false);
-    setMonthPickerVisible(true);
-    Animated.timing(monthPickerOpacity, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleMonthSelect = (newMonth: number) => {
-    selectedMonth.current = newMonth;
-    setMonthPickerVisible(false);
-    onJumpTo(selectedYear.current, selectedMonth.current);
-  };
-
-  const toggleYearPicker = () => {
-    setYearPickerVisible(!isYearPickerVisible);
-    Animated.timing(yearPickerOpacity, {
-      toValue: isYearPickerVisible ? 0 : 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const toggleMonthPicker = () => {
-    setMonthPickerVisible(!isMonthPickerVisible);
-    Animated.timing(monthPickerOpacity, {
-      toValue: isMonthPickerVisible ? 0 : 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  return (
-    <View className="w-full ">
-      {/* Month Header */}
+const CalendarHeader = memo(
+  ({
+    year,
+    month,
+    toggleYearPicker,
+    gotoPrevMonth,
+    gotoNextMonth,
+  }: {
+    year: number;
+    month: number;
+    toggleYearPicker: () => void;
+    gotoPrevMonth: () => void;
+    gotoNextMonth: () => void;
+  }) => {
+    return (
       <View className="mb-6 flex-row items-center justify-between">
         <TouchableOpacity
           onPress={toggleYearPicker}
@@ -138,13 +64,7 @@ export const YearCalendar = ({
         <View className="flex-row gap-2">
           <TouchableOpacity
             onPress={() => {
-              Animated.spring(monthViewTranslateX, {
-                toValue: displayWidth,
-                useNativeDriver: true,
-              }).start(() => {
-                onPrevMonth();
-                monthViewTranslateX.setValue(0);
-              });
+              gotoPrevMonth();
             }}
             className="h-12 w-12 items-center justify-center rounded-lg bg-[#f5f5f5]"
           >
@@ -156,13 +76,7 @@ export const YearCalendar = ({
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              Animated.spring(monthViewTranslateX, {
-                toValue: -displayWidth,
-                useNativeDriver: true,
-              }).start(() => {
-                onNextMonth();
-                monthViewTranslateX.setValue(0);
-              });
+              gotoNextMonth();
             }}
             className="h-12 w-12 items-center justify-center rounded-lg bg-[#f5f5f5]"
           >
@@ -174,156 +88,415 @@ export const YearCalendar = ({
           </TouchableOpacity>
         </View>
       </View>
+    );
+  },
+);
 
-      <View className="overflow-hidden">
-        <Animated.View
-          style={{
+const YearMonthPicker = memo(
+  ({
+    year,
+    month,
+    visible,
+    onSelect,
+    onCancel,
+  }: {
+    year: number;
+    month: number;
+    visible: boolean;
+    onSelect: (year: number, month: number) => void;
+    onCancel: () => void;
+  }) => {
+    const [yearPickerVisible, setYearPickerVisible] = useState(visible);
+    const [monthPickerVisible, setMonthPickerVisible] = useState(visible);
+    const yearPickerOpacity = useSharedValue(0);
+    const monthPickerOpacity = useSharedValue(0);
+    const animatedYearPickerStyle = useAnimatedStyle(() => {
+      return {
+        opacity: yearPickerOpacity.value,
+      };
+    });
+    const animatedMonthPickerStyle = useAnimatedStyle(() => {
+      return {
+        opacity: monthPickerOpacity.value,
+      };
+    });
+    const selectedYear = useRef(year);
+    const selectedMonth = useRef(month);
+
+    useEffect(() => {
+      setYearPickerVisible(visible);
+      yearPickerOpacity.value = withTiming(visible ? 1 : 0, { duration: 200 });
+    }, [visible, yearPickerOpacity]);
+
+    return (
+      <>
+        {/* Year Picker */}
+        {yearPickerVisible && (
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+              },
+              animatedYearPickerStyle,
+            ]}
+            className="absolute top-[60px] z-10 rounded-sm border-y-2 border-[#f5f5f5] bg-white"
+          >
+            <ScrollView
+              showsVerticalScrollIndicator
+              nestedScrollEnabled={true}
+              contentContainerStyle={{
+                justifyContent: 'center',
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+              }}
+              style={{
+                height: 336,
+              }}
+            >
+              {Array.from({ length: 24 }, (_, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => {
+                    selectedYear.current = year - 12 + i;
+                    setYearPickerVisible(false);
+                    setMonthPickerVisible(true);
+                    monthPickerOpacity.value = withTiming(1, { duration: 200 });
+                  }}
+                  className="m-2 w-20 rounded-lg bg-[#f5f5f5] p-4"
+                >
+                  <Text className="text-center text-[#666]">
+                    {year - 12 + i}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </Animated.View>
+        )}
+
+        {/* Month Picker */}
+        {monthPickerVisible && (
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+              },
+              animatedMonthPickerStyle,
+            ]}
+            className="absolute top-[60px] z-10 rounded-sm border-y-2 border-[#f5f5f5] bg-white"
+          >
+            <ScrollView
+              showsVerticalScrollIndicator
+              nestedScrollEnabled={true}
+              contentContainerStyle={{
+                justifyContent: 'center',
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+              }}
+              style={{
+                height: 336,
+              }}
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => {
+                    selectedMonth.current = i;
+                    setMonthPickerVisible(false);
+                    onSelect(selectedYear.current, selectedMonth.current);
+                  }}
+                  className="m-2 w-20 rounded-lg bg-[#f5f5f5] p-4"
+                >
+                  <Text className="text-center text-[#666]">{i + 1}月</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </Animated.View>
+        )}
+
+        {/* Overlay to close pickers */}
+        {(yearPickerVisible || monthPickerVisible) && (
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              if (yearPickerVisible) {
+                setYearPickerVisible(false);
+                onCancel();
+              }
+              if (monthPickerVisible) {
+                setMonthPickerVisible(false);
+                onCancel();
+              }
+            }}
+            className="absolute inset-0 -left-full -top-full h-[200vh] w-[200vw]"
+          />
+        )}
+      </>
+    );
+  },
+);
+
+const ThreeMonthViewPanel = memo(
+  ({
+    panYear,
+    panMonth,
+    checkedDays,
+  }: {
+    panYear: number;
+    panMonth: number;
+    checkedDays: Set<string>;
+  }) => {
+    const prevMonth = panMonth === 0 ? 11 : panMonth - 1;
+    const nextMonth = panMonth === 11 ? 0 : panMonth + 1;
+    const prevYear = panMonth === 0 ? panYear - 1 : panYear;
+    const nextYear = panMonth === 11 ? panYear + 1 : panYear;
+    const emptySet = new Set<string>();
+    return (
+      <>
+        <View style={{ width: '33.33%' }}>
+          <MonthCalendar
+            year={prevYear}
+            month={prevMonth}
+            checkedDays={emptySet}
+            onToggleDay={() => {}}
+          />
+        </View>
+        <View style={{ width: '33.33%' }}>
+          <MonthCalendar
+            year={panYear}
+            month={panMonth}
+            checkedDays={checkedDays}
+            onToggleDay={() => {}}
+          />
+        </View>
+        <View style={{ width: '33.33%' }}>
+          <MonthCalendar
+            year={nextYear}
+            month={nextMonth}
+            checkedDays={emptySet}
+            onToggleDay={() => {}}
+          />
+        </View>
+      </>
+    );
+  },
+);
+
+const MonthViewSwitcher = ({
+  checkedDays,
+  onToggleDay,
+  gotoPrevMonth,
+  gotoNextMonth,
+  monthViewTranslateX,
+  year,
+  month,
+}: {
+  checkedDays: Set<string>;
+  onToggleDay: (day: number) => void;
+  gotoPrevMonth: () => void;
+  gotoNextMonth: () => void;
+  monthViewTranslateX: any;
+  year: number;
+  month: number;
+}) => {
+  const swiping = useDerivedValue(() => {
+    return monthViewTranslateX.value !== 0;
+  });
+  const swipeOpacityStyle = useAnimatedStyle(() => {
+    return {
+      opacity: swiping.value ? 1 : 0,
+    };
+  });
+  const calendarOpacityStyle = useAnimatedStyle(() => {
+    return {
+      opacity: swiping.value ? 0 : 1,
+    };
+  });
+
+  const [panYear, setPanYear] = useState(year);
+  const [panMonth, setPanMonth] = useState(month);
+
+  useEffect(() => {
+    setPanYear(year);
+    setPanMonth(month);
+  }, [year, month]);
+
+  const animatedMonthViewStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: monthViewTranslateX.value }],
+    };
+  });
+
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      return Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+    },
+    onPanResponderMove: (_, gestureState) => {
+      monthViewTranslateX.value = gestureState.dx;
+    },
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx > 50) {
+        gotoPrevMonth();
+      } else if (gestureState.dx < -50) {
+        gotoNextMonth();
+      } else {
+        monthViewTranslateX.value = withSpring(0);
+      }
+    },
+    onPanResponderTerminate: () => {
+      monthViewTranslateX.value = withSpring(0);
+    },
+  });
+
+  return (
+    <View className=" min-h-[336px] overflow-hidden">
+      <Animated.View
+        style={[
+          {
             flexDirection: 'row',
             width: '300%',
-            transform: [{ translateX: monthViewTranslateX }],
             marginLeft: '-100%',
-          }}
-          {...panResponder.panHandlers}
-        >
-          <View style={{ width: '33.33%' }}>
-            <MonthCalendar
-              year={prevYear}
-              month={prevMonth}
-              checkedDays={checkedDays}
-              onToggleDay={onToggleDay}
-            />
-          </View>
-          <View style={{ width: '33.33%' }}>
-            <MonthCalendar
-              year={year}
-              month={month}
-              checkedDays={checkedDays}
-              onToggleDay={onToggleDay}
-            />
-          </View>
-          <View style={{ width: '33.33%' }}>
-            <MonthCalendar
-              year={nextYear}
-              month={nextMonth}
-              checkedDays={checkedDays}
-              onToggleDay={onToggleDay}
-            />
-          </View>
-        </Animated.View>
-      </View>
-
-      {/* Year Picker */}
-      {isYearPickerVisible && (
-        <Animated.View
-          style={{
-            opacity: yearPickerOpacity,
-            position: 'absolute',
-          }}
-          className="absolute top-[60px] z-10 rounded-sm border-y-2 border-[#f5f5f5] bg-white"
-        >
-          <ScrollView
-            showsVerticalScrollIndicator
-            nestedScrollEnabled={true}
-            contentContainerStyle={{
-              justifyContent: 'center',
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-            }}
-            style={{
-              height: 300,
-            }}
-          >
-            {Array.from({ length: 24 }, (_, i) => (
-              <TouchableOpacity
-                key={i}
-                onPress={() => handleYearSelect(year - 12 + i)}
-                className="m-2 w-20 rounded-lg bg-[#f5f5f5] p-4"
-              >
-                <Text className="text-center text-[#666]">{year - 12 + i}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </Animated.View>
-      )}
-
-      {/* Month Picker */}
-      {isMonthPickerVisible && (
-        <Animated.View
-          style={{
-            opacity: monthPickerOpacity,
-            position: 'absolute',
-          }}
-          className="absolute top-[60px] z-10 rounded-sm border-y-2 border-[#f5f5f5] bg-white"
-        >
-          <ScrollView
-            showsVerticalScrollIndicator
-            nestedScrollEnabled={true}
-            contentContainerStyle={{
-              justifyContent: 'center',
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-            }}
-            style={{
-              height: 300,
-            }}
-          >
-            {Array.from({ length: 12 }, (_, i) => (
-              <TouchableOpacity
-                key={i}
-                onPress={() => handleMonthSelect(i)}
-                className="m-2 w-20 rounded-lg bg-[#f5f5f5] p-4"
-              >
-                <Text className="text-center text-[#666]">{i + 1}月</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </Animated.View>
-      )}
-
-      {/* Overlay to close pickers */}
-      {(isYearPickerVisible || isMonthPickerVisible) && (
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            if (isYearPickerVisible) {
-              toggleYearPicker();
-            }
-            if (isMonthPickerVisible) {
-              toggleMonthPicker();
-            }
-          }}
-          className="absolute inset-0 -left-full -top-full h-[200vh] w-[200vw]"
+          },
+          swipeOpacityStyle,
+          animatedMonthViewStyle,
+        ]}
+      >
+        <ThreeMonthViewPanel
+          panYear={panYear}
+          panMonth={panMonth}
+          checkedDays={checkedDays}
         />
-      )}
+      </Animated.View>
+      <Animated.View
+        className="absolute w-full"
+        style={[calendarOpacityStyle]}
+        {...panResponder.panHandlers}
+      >
+        <MonthCalendar
+          year={year}
+          month={month}
+          checkedDays={checkedDays}
+          onToggleDay={onToggleDay}
+        />
+      </Animated.View>
+    </View>
+  );
+};
 
-      {/* Stats Row */}
-      <View className="mt-8 flex-row justify-between">
-        <View>
-          <Text className="text-sm text-[#666666]">完成天数</Text>
-          <Text className="mt-1 text-center text-2xl font-medium">
-            {checkedDays.size}
-          </Text>
-        </View>
-        <View>
-          <Text className="text-sm text-[#666666]">打卡次数</Text>
-          <Text className="mt-1 text-center text-2xl font-medium">
-            {checkedDays.size}
-          </Text>
-        </View>
-        <View>
-          <Text className="text-sm text-[#666666]">月完成率</Text>
-          <Text className="mt-1 text-center text-2xl font-medium">
-            {((checkedDays.size / getDaysInMonth(year, month)) * 100).toFixed(
-              1,
-            )}
-            %
-          </Text>
-        </View>
-        <View>
-          <Text className="text-sm text-[#666666]">小记数</Text>
-          <Text className="mt-1 text-center text-2xl font-medium">0</Text>
-        </View>
-      </View>
+const StatsRow = ({ checkedDays, year, month }: any) => (
+  <View className="mt-8 flex-row justify-between">
+    <View>
+      <Text className="text-sm text-[#666666]">完成天数</Text>
+      <Text className="mt-1 text-center text-2xl font-medium">
+        {checkedDays.size}
+      </Text>
+    </View>
+    <View>
+      <Text className="text-sm text-[#666666]">打卡次数</Text>
+      <Text className="mt-1 text-center text-2xl font-medium">
+        {checkedDays.size}
+      </Text>
+    </View>
+    <View>
+      <Text className="text-sm text-[#666666]">月完成率</Text>
+      <Text className="mt-1 text-center text-2xl font-medium">
+        {((checkedDays.size / getDaysInMonth(year, month)) * 100).toFixed(1)}%
+      </Text>
+    </View>
+    <View>
+      <Text className="text-sm text-[#666666]">小记数</Text>
+      <Text className="mt-1 text-center text-2xl font-medium">0</Text>
+    </View>
+  </View>
+);
+
+export const YearCalendar = ({
+  year,
+  month,
+  onPrevMonth,
+  onNextMonth,
+  onJumpTo,
+  checkedDays,
+  onToggleDay,
+}: YearCalendarProps) => {
+  const displayWidth = Dimensions.get('window').width - 56;
+  const monthViewTranslateX = useSharedValue(0);
+
+  const selectedYear = useRef(year);
+  const selectedMonth = useRef(month);
+
+  const [yearMonthPickerVisible, setYearMonthPickerVisible] = useState(false);
+
+  const toggleYearPicker = () => {
+    setYearMonthPickerVisible(true);
+  };
+
+  const handleSelect = (year: number, month: number) => {
+    selectedYear.current = year;
+    selectedMonth.current = month;
+    setYearMonthPickerVisible(false);
+    onJumpTo(year, month);
+  };
+
+  const gotoPrevMonth = () => {
+    monthViewTranslateX.value = withTiming(
+      displayWidth,
+      { duration: 200 },
+      () => {
+        monthViewTranslateX.value = 0;
+      },
+    );
+    if (month === 0) {
+      onPrevMonth();
+    } else {
+      runOnJS(onPrevMonth)();
+    }
+  };
+
+  const gotoNextMonth = () => {
+    monthViewTranslateX.value = withTiming(
+      -displayWidth,
+      { duration: 200 },
+      () => {
+        monthViewTranslateX.value = 0;
+      },
+    );
+    if (month === 11) {
+      onNextMonth();
+    } else {
+      runOnJS(onNextMonth)();
+    }
+  };
+
+  return (
+    <View className="w-full ">
+      <CalendarHeader
+        year={year}
+        month={month}
+        toggleYearPicker={toggleYearPicker}
+        gotoPrevMonth={gotoPrevMonth}
+        gotoNextMonth={gotoNextMonth}
+      />
+
+      <MonthViewSwitcher
+        checkedDays={checkedDays}
+        onToggleDay={onToggleDay}
+        gotoPrevMonth={gotoPrevMonth}
+        gotoNextMonth={gotoNextMonth}
+        monthViewTranslateX={monthViewTranslateX}
+        year={year}
+        month={month}
+      />
+
+      <YearMonthPicker
+        year={year}
+        month={month}
+        onSelect={handleSelect}
+        visible={yearMonthPickerVisible}
+        onCancel={() => {
+          setYearMonthPickerVisible(false);
+        }}
+      />
+      <StatsRow checkedDays={checkedDays} year={year} month={month} />
     </View>
   );
 };
