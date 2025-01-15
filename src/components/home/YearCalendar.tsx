@@ -35,18 +35,33 @@ const CalendarHeader = memo(
   ({
     year,
     month,
-    toggleYearPicker,
+    monthPickerVisible,
+    toggleMonthPicker: toggleYearPicker,
     gotoPrevMonth,
     gotoNextMonth,
   }: {
     year: number;
     month: number;
-    toggleYearPicker: () => void;
+    monthPickerVisible: boolean;
+    toggleMonthPicker: () => void;
     gotoPrevMonth: () => void;
     gotoNextMonth: () => void;
   }) => {
+    const chevronRotate = useSharedValue(0);
+    const chevronAnimatedStyle = useAnimatedStyle(() => {
+      return {
+        transform: [{ rotate: `${chevronRotate.value}deg` }],
+      };
+    });
+
+    useEffect(() => {
+      chevronRotate.value = withTiming(monthPickerVisible ? 180 : 0, {
+        duration: 200,
+      });
+    }, [monthPickerVisible, chevronRotate]);
+
     return (
-      <View className="mb-6 flex-row items-center justify-between">
+      <View className="mb-3 flex-row items-center justify-between">
         <TouchableOpacity
           onPress={toggleYearPicker}
           className="flex-row items-center"
@@ -54,12 +69,21 @@ const CalendarHeader = memo(
           <Text className="text-xl font-medium">
             {year}年{month + 1}月
           </Text>
-          <MaterialCommunityIcons
-            name="chevron-down"
-            size={24}
-            color="#666"
-            style={{ marginLeft: 4 }}
-          />
+          <Animated.View
+            style={[
+              {
+                transformOrigin: 'center',
+                marginLeft: 4,
+              },
+              chevronAnimatedStyle,
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="chevron-down"
+              size={24}
+              color="#666"
+            />
+          </Animated.View>
         </TouchableOpacity>
         <View className="flex-row gap-2">
           <TouchableOpacity
@@ -92,7 +116,7 @@ const CalendarHeader = memo(
   },
 );
 
-const YearMonthPicker = memo(
+const MonthPicker = memo(
   ({
     year,
     month,
@@ -113,11 +137,15 @@ const YearMonthPicker = memo(
     const animatedYearPickerStyle = useAnimatedStyle(() => {
       return {
         opacity: yearPickerOpacity.value,
+        transform: [{ translateY: yearPickerOpacity.value * 10 }],
+        visibility: yearPickerOpacity.value === 0 ? 'hidden' : 'visible',
       };
     });
     const animatedMonthPickerStyle = useAnimatedStyle(() => {
       return {
         opacity: monthPickerOpacity.value,
+        transform: [{ translateY: monthPickerOpacity.value * 10 }],
+        visibility: monthPickerOpacity.value === 0 ? 'hidden' : 'visible',
       };
     });
     const selectedYear = useRef(year);
@@ -127,6 +155,12 @@ const YearMonthPicker = memo(
       setYearPickerVisible(visible);
       yearPickerOpacity.value = withTiming(visible ? 1 : 0, { duration: 200 });
     }, [visible, yearPickerOpacity]);
+
+    useEffect(() => {
+      monthPickerOpacity.value = withTiming(monthPickerVisible ? 1 : 0, {
+        duration: 200,
+      });
+    }, [monthPickerVisible, monthPickerOpacity]);
 
     return (
       <>
@@ -139,7 +173,7 @@ const YearMonthPicker = memo(
               },
               animatedYearPickerStyle,
             ]}
-            className="absolute top-[60px] z-10 rounded-sm border-y-2 border-[#f5f5f5] bg-white"
+            className="absolute top-[50px] z-10 rounded-sm border-y-2 border-[#f5f5f5] bg-white"
           >
             <ScrollView
               showsVerticalScrollIndicator
@@ -160,7 +194,6 @@ const YearMonthPicker = memo(
                     selectedYear.current = year - 12 + i;
                     setYearPickerVisible(false);
                     setMonthPickerVisible(true);
-                    monthPickerOpacity.value = withTiming(1, { duration: 200 });
                   }}
                   className="m-2 w-20 rounded-lg bg-[#f5f5f5] p-4"
                 >
@@ -182,7 +215,7 @@ const YearMonthPicker = memo(
               },
               animatedMonthPickerStyle,
             ]}
-            className="absolute top-[60px] z-10 rounded-sm border-y-2 border-[#f5f5f5] bg-white"
+            className="absolute top-[50px] z-10 rounded-sm border-y-2 border-[#f5f5f5] bg-white"
           >
             <ScrollView
               showsVerticalScrollIndicator
@@ -211,6 +244,10 @@ const YearMonthPicker = memo(
               ))}
             </ScrollView>
           </Animated.View>
+        )}
+        {/* background */}
+        {(yearPickerVisible || monthPickerVisible) && (
+          <View className="absolute top-[50px] z-0 h-[336px] w-full rounded-sm  bg-white" />
         )}
 
         {/* Overlay to close pickers */}
@@ -424,16 +461,16 @@ export const YearCalendar = ({
   const selectedYear = useRef(year);
   const selectedMonth = useRef(month);
 
-  const [yearMonthPickerVisible, setYearMonthPickerVisible] = useState(false);
+  const [monthPickerVisible, setMonthPickerVisible] = useState(false);
 
-  const toggleYearPicker = () => {
-    setYearMonthPickerVisible(true);
+  const toggleMonthPicker = () => {
+    setMonthPickerVisible(true);
   };
 
   const handleSelect = (year: number, month: number) => {
     selectedYear.current = year;
     selectedMonth.current = month;
-    setYearMonthPickerVisible(false);
+    setMonthPickerVisible(false);
     onJumpTo(year, month);
   };
 
@@ -472,7 +509,8 @@ export const YearCalendar = ({
       <CalendarHeader
         year={year}
         month={month}
-        toggleYearPicker={toggleYearPicker}
+        toggleMonthPicker={toggleMonthPicker}
+        monthPickerVisible={monthPickerVisible}
         gotoPrevMonth={gotoPrevMonth}
         gotoNextMonth={gotoNextMonth}
       />
@@ -487,13 +525,13 @@ export const YearCalendar = ({
         month={month}
       />
 
-      <YearMonthPicker
+      <MonthPicker
         year={year}
         month={month}
         onSelect={handleSelect}
-        visible={yearMonthPickerVisible}
+        visible={monthPickerVisible}
         onCancel={() => {
-          setYearMonthPickerVisible(false);
+          setMonthPickerVisible(false);
         }}
       />
       <StatsRow checkedDays={checkedDays} year={year} month={month} />
