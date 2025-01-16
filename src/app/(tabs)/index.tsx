@@ -16,8 +16,10 @@ import { YearCalendar } from '@/components/home/YearCalendar';
 
 export default function Home() {
   const today = new Date();
-  const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentDate, setCurrentDate] = useState({
+    year: today.getFullYear(),
+    month: today.getMonth(),
+  });
   const [checkedDays, setCheckedDays] = useState<Set<string>>(new Set());
 
   const colorScheme = useColorScheme();
@@ -46,25 +48,31 @@ export default function Home() {
   );
 
   const handlePrevMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
+    let year = currentDate.year;
+    let month = currentDate.month;
+    if (month === 0) {
+      year = year - 1;
+      month = 11;
     } else {
-      setCurrentMonth(currentMonth - 1);
+      month = month - 1;
     }
+    setCurrentDate({ year, month });
   };
 
   const handleNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
+    let year = currentDate.year;
+    let month = currentDate.month;
+    if (month === 11) {
+      year = year + 1;
+      month = 0;
     } else {
-      setCurrentMonth(currentMonth + 1);
+      month = month + 1;
     }
+    setCurrentDate({ year, month });
   };
 
   const handleJumpTo = (year: number, month: number) => {
-    setCurrentYear(year);
+    setCurrentDate({ year, month });
     setCurrentMonth(month);
   };
 

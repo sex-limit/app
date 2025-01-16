@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   PanResponder,
@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import Animated, {
   runOnJS,
+  type SharedValue,
+  useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
@@ -88,7 +90,7 @@ const CalendarHeader = memo(
         <View className="flex-row gap-2">
           <TouchableOpacity
             onPress={() => {
-              gotoPrevMonth();
+              runOnJS(gotoPrevMonth)();
             }}
             className="h-12 w-12 items-center justify-center rounded-lg bg-[#f5f5f5]"
           >
@@ -100,7 +102,7 @@ const CalendarHeader = memo(
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              gotoNextMonth();
+              runOnJS(gotoNextMonth)();
             }}
             className="h-12 w-12 items-center justify-center rounded-lg bg-[#f5f5f5]"
           >
@@ -274,18 +276,16 @@ const MonthPicker = memo(
 
 const ThreeMonthViewPanel = memo(
   ({
-    panYear,
-    panMonth,
+    panDate,
     checkedDays,
   }: {
-    panYear: number;
-    panMonth: number;
+    panDate: { year: number; month: number };
     checkedDays: Set<string>;
   }) => {
-    const prevMonth = panMonth === 0 ? 11 : panMonth - 1;
-    const nextMonth = panMonth === 11 ? 0 : panMonth + 1;
-    const prevYear = panMonth === 0 ? panYear - 1 : panYear;
-    const nextYear = panMonth === 11 ? panYear + 1 : panYear;
+    const prevMonth = panDate.month === 0 ? 11 : panDate.month - 1;
+    const nextMonth = panDate.month === 11 ? 0 : panDate.month + 1;
+    const prevYear = panDate.month === 0 ? panDate.year - 1 : panDate.year;
+    const nextYear = panDate.month === 11 ? panDate.year + 1 : panDate.year;
     const emptySet = new Set<string>();
     return (
       <>
@@ -299,8 +299,8 @@ const ThreeMonthViewPanel = memo(
         </View>
         <View style={{ width: '33.33%' }}>
           <MonthCalendar
-            year={panYear}
-            month={panMonth}
+            year={panDate.year}
+            month={panDate.month}
             checkedDays={checkedDays}
             onToggleDay={() => {}}
           />
@@ -326,6 +326,7 @@ const MonthViewSwitcher = ({
   monthViewTranslateX,
   year,
   month,
+  switcherActive,
 }: {
   checkedDays: Set<string>;
   onToggleDay: (day: number) => void;
@@ -334,28 +335,65 @@ const MonthViewSwitcher = ({
   monthViewTranslateX: any;
   year: number;
   month: number;
+  switcherActive: SharedValue<boolean>;
 }) => {
+  // Ok, it's quite ugly, right?
+  //
+  // There are (3+1) `calendars` in the view,
+  // the first three are previous, current and next month calendars that show in the swiping effect,
+  // and the last one is the current month calendar that shows in the normal state.
+  //
+  // In reanimated, the `translateX` updates in UI thread, while updating current month runs in JS thread.
+  // It will cause the month view updating twice
+  //
+  // So I use `swiping` and `switcherActive` to avoid visual shaking.
+  //
+  // `swiping` means the month view is translating.
+  // After the month view is translated, `swiping` will be set to false.
+  // But at this time, the month view is not updated yet.
+  // `switcherActive` is used to check if the month view is updated.
   const swiping = useDerivedValue(() => {
     return monthViewTranslateX.value !== 0;
   });
+  const [panDate, setPanDate] = useState({ year, month });
+
   const swipeOpacityStyle = useAnimatedStyle(() => {
     return {
-      opacity: swiping.value ? 1 : 0,
+      opacity: swiping.value || switcherActive.value ? 1 : 0,
     };
   });
+
+  const updatePan = useCallback(() => {
+    requestAnimationFrame(() => {
+      setPanDate({ year, month });
+    });
+  }, [year, month]);
+
+  useAnimatedReaction(
+    () => swiping.value || switcherActive.value,
+    (visible) => {
+      if (!visible && (panDate.year !== year || panDate.month !== month)) {
+        runOnJS(updatePan)();
+      }
+    },
+  );
+
   const calendarOpacityStyle = useAnimatedStyle(() => {
     return {
-      opacity: swiping.value ? 0 : 1,
+      opacity: swiping.value || switcherActive.value ? 0 : 1,
     };
   });
 
-  const [panYear, setPanYear] = useState(year);
-  const [panMonth, setPanMonth] = useState(month);
-
+  // TODO: We may need a better solution to achieve this.
   useEffect(() => {
-    setPanYear(year);
-    setPanMonth(month);
-  }, [year, month]);
+    function checkActive() {
+      switcherActive.value = monthViewTranslateX.value !== 0;
+      if (switcherActive.value) {
+        setTimeout(checkActive, 0);
+      }
+    }
+    checkActive();
+  });
 
   const animatedMonthViewStyle = useAnimatedStyle(() => {
     return {
@@ -397,11 +435,7 @@ const MonthViewSwitcher = ({
           animatedMonthViewStyle,
         ]}
       >
-        <ThreeMonthViewPanel
-          panYear={panYear}
-          panMonth={panMonth}
-          checkedDays={checkedDays}
-        />
+        <ThreeMonthViewPanel panDate={panDate} checkedDays={checkedDays} />
       </Animated.View>
       <Animated.View
         className="absolute w-full"
@@ -474,34 +508,30 @@ export const YearCalendar = ({
     onJumpTo(year, month);
   };
 
+  const switcherActive = useSharedValue(false);
+
+  useEffect(() => {
+    monthViewTranslateX.value = 0;
+  }, [monthViewTranslateX, year, month]);
+
   const gotoPrevMonth = () => {
+    switcherActive.value = true;
     monthViewTranslateX.value = withTiming(
       displayWidth,
       { duration: 200 },
-      () => {
-        monthViewTranslateX.value = 0;
-      },
+      () => {},
     );
-    if (month === 0) {
-      onPrevMonth();
-    } else {
-      runOnJS(onPrevMonth)();
-    }
+    runOnJS(onPrevMonth)();
   };
 
   const gotoNextMonth = () => {
+    switcherActive.value = true;
     monthViewTranslateX.value = withTiming(
       -displayWidth,
       { duration: 200 },
-      () => {
-        monthViewTranslateX.value = 0;
-      },
+      () => {},
     );
-    if (month === 11) {
-      onNextMonth();
-    } else {
-      runOnJS(onNextMonth)();
-    }
+    runOnJS(onNextMonth)();
   };
 
   return (
@@ -523,6 +553,7 @@ export const YearCalendar = ({
         monthViewTranslateX={monthViewTranslateX}
         year={year}
         month={month}
+        switcherActive={switcherActive}
       />
 
       <MonthPicker
