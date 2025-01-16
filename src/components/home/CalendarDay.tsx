@@ -1,11 +1,27 @@
-import React, { useCallback, useState } from 'react';
-import { Animated, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback } from 'react';
+import {
+  type StyleProp,
+  Text,
+  type TextStyle,
+  TouchableOpacity,
+  View,
+  type ViewStyle,
+} from 'react-native';
+import Animated, {
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
+
+import { useCheckIn } from '@/contexts/CheckInContext';
 
 interface CalendarDayProps {
   day: number;
   isChecked: boolean;
   isToday: boolean;
   onPress?: () => void;
+  animatedThemeColorStyle: StyleProp<ViewStyle>;
+  animatedTextColorStyle: StyleProp<TextStyle>;
 }
 
 export const CalendarDay = ({
@@ -13,36 +29,26 @@ export const CalendarDay = ({
   isChecked,
   isToday,
   onPress,
+  animatedThemeColorStyle,
+  animatedTextColorStyle,
 }: CalendarDayProps) => {
-  const [scaleAnim] = useState(new Animated.Value(1));
-  const [progressAnim] = useState(new Animated.Value(0));
+  const scaleAnim = useSharedValue(1);
+  const progressAnim = useSharedValue(0);
 
   const handlePress = useCallback(() => {
     if (isChecked) {
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 0.8,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      scaleAnim.value = withSequence(
+        withTiming(0.8, { duration: 100 }),
+        withTiming(1, { duration: 100 }),
+      );
     } else {
-      Animated.sequence([
-        Animated.timing(progressAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-      ]).start();
+      progressAnim.value = withTiming(1, { duration: 300 });
     }
 
     onPress?.();
   }, [onPress, scaleAnim, progressAnim, isChecked]);
+
+  const { modeTheme } = useCheckIn();
 
   if (!day) return <View className="h-12 w-12 flex-1" />;
 
@@ -60,26 +66,31 @@ export const CalendarDay = ({
       >
         {isChecked && (
           <Animated.View
-            className="absolute h-12 w-12 rounded-full border border-[#8AB86E]"
-            style={{
-              backgroundColor: progressAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [
-                  'rgba(138, 184, 110, 0)',
-                  'rgba(138, 184, 110, 0.2)',
-                ],
-              }),
-            }}
+            className={`absolute h-12 w-12 rounded-full border `}
+            style={[
+              // {
+              //   backgroundColor: progressAnim.interpolate({
+              //     inputRange: [0, 1],
+              //     outputRange: [
+              //       'rgba(138, 184, 110, 0)',
+              //       'rgba(138, 184, 110, 0.2)',
+              //     ],
+              //   }),
+              // },
+              animatedThemeColorStyle,
+            ]}
           />
         )}
         {isToday && !isChecked && (
           <View className="absolute h-12 w-12 rounded-full bg-[#f5f5f5]" />
         )}
-        <Text
-          className={`text-base ${isChecked ? 'text-[#8AB86E]' : 'text-[#333333]'}`}
-        >
-          {day}
-        </Text>
+        {isChecked ? (
+          <Animated.Text className="text-base" style={[animatedTextColorStyle]}>
+            {day}
+          </Animated.Text>
+        ) : (
+          <Text className="text-base text-[#333333]">{day}</Text>
+        )}
       </Animated.View>
     </TouchableOpacity>
   );

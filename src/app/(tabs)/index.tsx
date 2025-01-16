@@ -13,11 +13,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatCard } from '@/components/home/StatCard';
 import { YearCalendar } from '@/components/home/YearCalendar';
+import { useCheckIn } from '@/contexts/CheckInContext';
 
 export default function Home() {
   const today = new Date();
-  const [currentYear, setCurrentYear] = useState(today.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const { getByMonth, checkInRecords, handleCheckIn, switchMode } =
+    useCheckIn();
+  const [currentDate, setCurrentDate] = useState({
+    year: today.getFullYear(),
+    month: today.getMonth(),
+  });
   const [checkedDays, setCheckedDays] = useState<Set<string>>(new Set());
 
   const colorScheme = useColorScheme();
@@ -31,49 +36,72 @@ export default function Home() {
     });
   });
 
+  useEffect(() => {
+    setCheckedDays(
+      new Set(
+        getByMonth(currentDate.year, currentDate.month).map((d) =>
+          d.toString(),
+        ),
+      ),
+    );
+  }, [currentDate, getByMonth]);
+
   const handleToggleDay = useCallback(
     (day: number) => {
-      const dateKey = `${currentYear}-${currentMonth + 1}-${day}`;
-      const newCheckedDays = new Set(checkedDays);
-      if (newCheckedDays.has(dateKey)) {
-        newCheckedDays.delete(dateKey);
-      } else {
-        newCheckedDays.add(dateKey);
-      }
-      setCheckedDays(newCheckedDays);
+      const dayStr = `${currentDate.year}-${currentDate.month + 1}-${day}`;
+      handleCheckIn(dayStr, !checkedDays.has(dayStr));
     },
-    [checkedDays, currentYear, currentMonth],
+    [checkedDays, currentDate, handleCheckIn],
   );
 
   const handlePrevMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
+    let year = currentDate.year;
+    let month = currentDate.month;
+    if (month === 0) {
+      year = year - 1;
+      month = 11;
     } else {
-      setCurrentMonth(currentMonth - 1);
+      month = month - 1;
     }
+    setCurrentDate({ year, month });
   };
 
   const handleNextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
+    let year = currentDate.year;
+    let month = currentDate.month;
+    if (month === 11) {
+      year = year + 1;
+      month = 0;
     } else {
-      setCurrentMonth(currentMonth + 1);
+      month = month + 1;
     }
+    setCurrentDate({ year, month });
   };
 
   const handleJumpTo = (year: number, month: number) => {
-    setCurrentYear(year);
-    setCurrentMonth(month);
+    setCurrentDate({ year, month });
+  };
+
+  const currentMode = checkInRecords.mode;
+  const handleSwitchMode = () => {
+    switchMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
   };
 
   return (
     <>
-      <View className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]">
+      <View
+        className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]"
+        style={{
+          filter: 'invert(1)',
+        }}
+      >
         <Image
           className="h-1/2 w-full rounded-b-2xl"
-          source={require('@/ui/assets/image/home-bg.png')}
+          source={
+            currentMode === 'limit'
+              ? require('@/ui/assets/image/home-bg.png')
+              : require('@/ui/assets/image/home-bg-red.png')
+          }
         />
       </View>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -133,8 +161,8 @@ export default function Home() {
             {/* Calendar Section */}
             <View className="mx-4 mb-20 mt-4 rounded-2xl bg-white p-4">
               <YearCalendar
-                year={currentYear}
-                month={currentMonth}
+                year={currentDate.year}
+                month={currentDate.month}
                 onPrevMonth={handlePrevMonth}
                 onNextMonth={handleNextMonth}
                 onJumpTo={handleJumpTo}
@@ -148,6 +176,7 @@ export default function Home() {
       <TouchableOpacity
         activeOpacity={0.6}
         className="absolute bottom-[20px] left-1/2 z-20 -translate-x-1/2 flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm"
+        onPress={handleSwitchMode}
       >
         <MaterialCommunityIcons name="swap-horizontal" size={20} color="#666" />
         <Text className="ml-1">切换模式</Text>
