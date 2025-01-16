@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import Animated, {
   runOnJS,
-  type SharedValue,
   useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
@@ -326,7 +325,6 @@ const MonthViewSwitcher = ({
   monthViewTranslateX,
   year,
   month,
-  switcherActive,
 }: {
   checkedDays: Set<string>;
   onToggleDay: (day: number) => void;
@@ -335,33 +333,15 @@ const MonthViewSwitcher = ({
   monthViewTranslateX: any;
   year: number;
   month: number;
-  switcherActive: SharedValue<boolean>;
 }) => {
-  // Ok, it's quite ugly, right?
-  //
   // There are (3+1) `calendars` in the view,
   // the first three are previous, current and next month calendars that show in the swiping effect,
   // and the last one is the current month calendar that shows in the normal state.
-  //
-  // In reanimated, the `translateX` updates in UI thread, while updating current month runs in JS thread.
-  // It will cause the month view updating twice
-  //
-  // So I use `swiping` and `switcherActive` to avoid visual shaking.
-  //
-  // `swiping` means the month view is translating.
-  // After the month view is translated, `swiping` will be set to false.
-  // But at this time, the month view is not updated yet.
-  // `switcherActive` is used to check if the month view is updated.
+
   const swiping = useDerivedValue(() => {
     return monthViewTranslateX.value !== 0;
   });
   const [panDate, setPanDate] = useState({ year, month });
-
-  const swipeOpacityStyle = useAnimatedStyle(() => {
-    return {
-      opacity: swiping.value || switcherActive.value ? 1 : 0,
-    };
-  });
 
   const updatePan = useCallback(() => {
     requestAnimationFrame(() => {
@@ -370,7 +350,7 @@ const MonthViewSwitcher = ({
   }, [year, month]);
 
   useAnimatedReaction(
-    () => swiping.value || switcherActive.value,
+    () => swiping.value,
     (visible) => {
       if (!visible && (panDate.year !== year || panDate.month !== month)) {
         runOnJS(updatePan)();
@@ -380,24 +360,14 @@ const MonthViewSwitcher = ({
 
   const calendarOpacityStyle = useAnimatedStyle(() => {
     return {
-      opacity: swiping.value || switcherActive.value ? 0 : 1,
+      opacity: swiping.value ? 0 : 1,
     };
-  });
-
-  // TODO: We may need a better solution to achieve this.
-  useEffect(() => {
-    function checkActive() {
-      switcherActive.value = monthViewTranslateX.value !== 0;
-      if (switcherActive.value) {
-        setTimeout(checkActive, 0);
-      }
-    }
-    checkActive();
   });
 
   const animatedMonthViewStyle = useAnimatedStyle(() => {
     return {
       transform: [{ translateX: monthViewTranslateX.value }],
+      opacity: monthViewTranslateX.value !== 0 ? 1 : 0,
     };
   });
 
@@ -431,7 +401,7 @@ const MonthViewSwitcher = ({
             width: '300%',
             marginLeft: '-100%',
           },
-          swipeOpacityStyle,
+          // swipeOpacityStyle,
           animatedMonthViewStyle,
         ]}
       >
@@ -508,14 +478,11 @@ export const YearCalendar = ({
     onJumpTo(year, month);
   };
 
-  const switcherActive = useSharedValue(false);
-
   useEffect(() => {
     monthViewTranslateX.value = 0;
   }, [monthViewTranslateX, year, month]);
 
   const gotoPrevMonth = () => {
-    switcherActive.value = true;
     monthViewTranslateX.value = withTiming(
       displayWidth,
       { duration: 200 },
@@ -525,7 +492,6 @@ export const YearCalendar = ({
   };
 
   const gotoNextMonth = () => {
-    switcherActive.value = true;
     monthViewTranslateX.value = withTiming(
       -displayWidth,
       { duration: 200 },
@@ -553,7 +519,6 @@ export const YearCalendar = ({
         monthViewTranslateX={monthViewTranslateX}
         year={year}
         month={month}
-        switcherActive={switcherActive}
       />
 
       <MonthPicker
