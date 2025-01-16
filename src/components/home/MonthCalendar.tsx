@@ -68,7 +68,7 @@ export const MonthCalendar = ({
             <CalendarDay
               key={dayIndex}
               day={day}
-              isChecked={checkedDays.has(`${year}-${month + 1}-${day}`)}
+              isChecked={checkedDays.has(`${day}`)}
               isToday={isCurrentMonth && day === currentDay}
               onPress={() => day && onToggleDay(day)}
             />

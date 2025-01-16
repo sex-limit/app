@@ -13,9 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatCard } from '@/components/home/StatCard';
 import { YearCalendar } from '@/components/home/YearCalendar';
+import { useCheckIn } from '@/contexts/CheckInContext';
 
 export default function Home() {
   const today = new Date();
+  const { getByMonth, checkInRecords, handleCheckIn } = useCheckIn();
   const [currentDate, setCurrentDate] = useState({
     year: today.getFullYear(),
     month: today.getMonth(),
@@ -33,18 +35,23 @@ export default function Home() {
     });
   });
 
+  const updateCheckedDays = useCallback(
+    (year: number, month: number) => {
+      setCheckedDays(new Set(getByMonth(year, month).map((d) => d.toString())));
+    },
+    [getByMonth],
+  );
+
+  useEffect(() => {
+    updateCheckedDays(currentDate.year, currentDate.month);
+  }, [currentDate, updateCheckedDays]);
+
   const handleToggleDay = useCallback(
     (day: number) => {
-      const dateKey = `${currentYear}-${currentMonth + 1}-${day}`;
-      const newCheckedDays = new Set(checkedDays);
-      if (newCheckedDays.has(dateKey)) {
-        newCheckedDays.delete(dateKey);
-      } else {
-        newCheckedDays.add(dateKey);
-      }
-      setCheckedDays(newCheckedDays);
+      const dayStr = `${currentDate.year}-${currentDate.month + 1}-${day}`;
+      handleCheckIn(dayStr, !checkedDays.has(dayStr));
     },
-    [checkedDays, currentYear, currentMonth],
+    [checkedDays, currentDate, handleCheckIn],
   );
 
   const handlePrevMonth = () => {
@@ -56,6 +63,7 @@ export default function Home() {
     } else {
       month = month - 1;
     }
+    updateCheckedDays(year, month);
     setCurrentDate({ year, month });
   };
 
@@ -68,12 +76,13 @@ export default function Home() {
     } else {
       month = month + 1;
     }
+    updateCheckedDays(year, month);
     setCurrentDate({ year, month });
   };
 
   const handleJumpTo = (year: number, month: number) => {
     setCurrentDate({ year, month });
-    setCurrentMonth(month);
+    updateCheckedDays(year, month);
   };
 
   return (
@@ -141,8 +150,8 @@ export default function Home() {
             {/* Calendar Section */}
             <View className="mx-4 mb-20 mt-4 rounded-2xl bg-white p-4">
               <YearCalendar
-                year={currentYear}
-                month={currentMonth}
+                year={currentDate.year}
+                month={currentDate.month}
                 onPrevMonth={handlePrevMonth}
                 onNextMonth={handleNextMonth}
                 onJumpTo={handleJumpTo}
