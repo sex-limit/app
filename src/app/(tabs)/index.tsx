@@ -17,7 +17,8 @@ import { useCheckIn } from '@/contexts/CheckInContext';
 
 export default function Home() {
   const today = new Date();
-  const { getByMonth, checkInRecords, handleCheckIn } = useCheckIn();
+  const { getByMonth, checkInRecords, handleCheckIn, switchMode } =
+    useCheckIn();
   const [currentDate, setCurrentDate] = useState({
     year: today.getFullYear(),
     month: today.getMonth(),
@@ -35,16 +36,15 @@ export default function Home() {
     });
   });
 
-  const updateCheckedDays = useCallback(
-    (year: number, month: number) => {
-      setCheckedDays(new Set(getByMonth(year, month).map((d) => d.toString())));
-    },
-    [getByMonth],
-  );
-
   useEffect(() => {
-    updateCheckedDays(currentDate.year, currentDate.month);
-  }, [currentDate, updateCheckedDays]);
+    setCheckedDays(
+      new Set(
+        getByMonth(currentDate.year, currentDate.month).map((d) =>
+          d.toString(),
+        ),
+      ),
+    );
+  }, [currentDate, getByMonth]);
 
   const handleToggleDay = useCallback(
     (day: number) => {
@@ -63,7 +63,6 @@ export default function Home() {
     } else {
       month = month - 1;
     }
-    updateCheckedDays(year, month);
     setCurrentDate({ year, month });
   };
 
@@ -76,21 +75,33 @@ export default function Home() {
     } else {
       month = month + 1;
     }
-    updateCheckedDays(year, month);
     setCurrentDate({ year, month });
   };
 
   const handleJumpTo = (year: number, month: number) => {
     setCurrentDate({ year, month });
-    updateCheckedDays(year, month);
+  };
+
+  const currentMode = checkInRecords.mode;
+  const handleSwitchMode = () => {
+    switchMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
   };
 
   return (
     <>
-      <View className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]">
+      <View
+        className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]"
+        style={{
+          filter: 'invert(1)',
+        }}
+      >
         <Image
           className="h-1/2 w-full rounded-b-2xl"
-          source={require('@/ui/assets/image/home-bg.png')}
+          source={
+            currentMode === 'limit'
+              ? require('@/ui/assets/image/home-bg.png')
+              : require('@/ui/assets/image/home-bg-red.png')
+          }
         />
       </View>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
@@ -165,6 +176,7 @@ export default function Home() {
       <TouchableOpacity
         activeOpacity={0.6}
         className="absolute bottom-[20px] left-1/2 z-20 -translate-x-1/2 flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm"
+        onPress={handleSwitchMode}
       >
         <MaterialCommunityIcons name="swap-horizontal" size={20} color="#666" />
         <Text className="ml-1">切换模式</Text>

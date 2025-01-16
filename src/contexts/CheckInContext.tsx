@@ -15,32 +15,29 @@ interface CheckInContextType {
   handleCheckIn: (date: string, check: boolean) => void;
   switchMode: (mode: 'limit' | 'exhaustive') => void;
   getByMonth: (year: number, month: number) => number[];
+  modeTheme: string;
 }
+
+const mockLimitData = {
+  mode: 'limit' as const,
+  total: 16,
+  data: Array.from({ length: 365 }, (_, index) => ({
+    date: new Date(2025, 0, index + 1).toISOString().split('T')[0],
+  })).filter(() => Math.random() < 0.5),
+};
+
+const mockExhaustiveData = {
+  mode: 'exhaustive' as const,
+  total: 365,
+  data: Array.from({ length: 365 }, (_, index) => ({
+    date: new Date(2025, 0, index + 1).toISOString().split('T')[0],
+  })).filter(() => Math.random() < 0.5),
+};
 
 const CheckInContext = createContext<CheckInContextType | undefined>(undefined);
 export function CheckInProvider({ children }: { children: React.ReactNode }) {
-  const [checkInRecords, setCheckInRecords] = useState<CheckInRecords>({
-    mode: 'limit',
-    total: 16,
-    data: [
-      { date: '2024-12-27' },
-      { date: '2024-12-28' },
-      { date: '2024-12-30' },
-      { date: '2025-01-01' },
-      { date: '2025-01-02' },
-      { date: '2025-01-03' },
-      { date: '2025-01-05' },
-      { date: '2025-01-06' },
-      { date: '2025-01-07' },
-      { date: '2025-01-08' },
-      { date: '2025-01-09' },
-      { date: '2025-01-12' },
-      { date: '2025-01-13' },
-      { date: '2025-01-14' },
-      { date: '2025-01-15' },
-      { date: '2025-01-16' },
-    ],
-  });
+  const [checkInRecords, setCheckInRecords] =
+    useState<CheckInRecords>(mockLimitData);
 
   const groupedRecords = useMemo(() => {
     return groupByMonth(checkInRecords.data);
@@ -70,19 +67,31 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   };
 
   const switchMode = (mode: 'limit' | 'exhaustive') => {
-    setCheckInRecords((prevRecords) => ({
-      ...prevRecords,
-      mode,
-    }));
+    setCheckInRecords(() => {
+      if (mode === 'limit') {
+        return mockLimitData;
+      }
+      return mockExhaustiveData;
+    });
   };
 
   const getByMonth = (year: number, month: number) => {
     return groupedRecords[year]?.[month] || [];
   };
 
+  const modeTheme = useMemo(() => {
+    return checkInRecords.mode === 'limit' ? '#8AB86E' : '#E1351F';
+  }, [checkInRecords.mode]);
+
   return (
     <CheckInContext.Provider
-      value={{ checkInRecords, handleCheckIn, switchMode, getByMonth }}
+      value={{
+        checkInRecords,
+        handleCheckIn,
+        switchMode,
+        getByMonth,
+        modeTheme,
+      }}
     >
       {children}
     </CheckInContext.Provider>

@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Text, View } from 'react-native';
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
+import { useCheckIn } from '@/contexts/CheckInContext';
 import { getDaysInMonth, getFirstDayOfMonth } from '@/utils/date';
 
 import { CalendarDay } from './CalendarDay';
@@ -49,8 +55,21 @@ export const MonthCalendar = ({
 
   const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
 
+  const { modeTheme } = useCheckIn();
+  const animatedThemeColor = useSharedValue(modeTheme);
+  const animatedThemeColorStyle = useAnimatedStyle(() => ({
+    borderColor: animatedThemeColor.value,
+  }));
+  const animatedTextColorStyle = useAnimatedStyle(() => ({
+    color: animatedThemeColor.value,
+  }));
+
+  useEffect(() => {
+    animatedThemeColor.value = withTiming(modeTheme, { duration: 300 });
+  }, [modeTheme, animatedThemeColor]);
+
   return (
-    <View className="flex-1 grow-0 basis-1" style={{ height: 336 }}>
+    <View className="flex-1 grow-0 basis-1" style={{ height: 340 }}>
       <View className="mb-2 flex-row">
         {weekDays.map((day, index) => (
           <View
@@ -71,6 +90,8 @@ export const MonthCalendar = ({
               isChecked={checkedDays.has(`${day}`)}
               isToday={isCurrentMonth && day === currentDay}
               onPress={() => day && onToggleDay(day)}
+              animatedThemeColorStyle={animatedThemeColorStyle}
+              animatedTextColorStyle={animatedTextColorStyle}
             />
           ))}
         </View>

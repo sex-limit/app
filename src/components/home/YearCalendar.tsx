@@ -185,7 +185,7 @@ const MonthPicker = memo(
                 flexWrap: 'wrap',
               }}
               style={{
-                height: 336,
+                height: 340,
               }}
             >
               {Array.from({ length: 24 }, (_, i) => (
@@ -227,7 +227,7 @@ const MonthPicker = memo(
                 flexWrap: 'wrap',
               }}
               style={{
-                height: 336,
+                height: 340,
               }}
             >
               {Array.from({ length: 12 }, (_, i) => (
@@ -248,7 +248,7 @@ const MonthPicker = memo(
         )}
         {/* background */}
         {(yearPickerVisible || monthPickerVisible) && (
-          <View className="absolute top-[50px] z-0 h-[336px] w-full rounded-sm  bg-white" />
+          <View className="absolute top-[50px] z-0 h-[340px] w-full rounded-sm  bg-white" />
         )}
 
         {/* Overlay to close pickers */}
@@ -393,7 +393,7 @@ const MonthViewSwitcher = ({
   });
 
   return (
-    <View className=" min-h-[336px] overflow-hidden">
+    <View className=" min-h-[340px] overflow-hidden">
       <Animated.View
         style={[
           {
