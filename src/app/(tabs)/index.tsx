@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,15 +16,9 @@ export default function Home() {
     year: today.getFullYear(),
     month: today.getMonth(),
   });
-  const [checkedDays, setCheckedDays] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    setCheckedDays(
-      new Set(
-        getByMonth(currentDate.year, currentDate.month).map((d) =>
-          d.toString(),
-        ),
-      ),
+  const checkedDays = useMemo(() => {
+    return new Set(
+      getByMonth(currentDate.year, currentDate.month).map((d) => d.toString()),
     );
   }, [currentDate, getByMonth]);
 
@@ -64,7 +58,7 @@ export default function Home() {
     setCurrentDate({ year, month });
   };
 
-  const currentMode = checkInRecords.mode;
+  const currentMode = checkMode;
   const handleSwitchMode = () => {
     switchMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
   };
