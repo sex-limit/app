@@ -6,12 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatCard } from '@/components/home/StatCard';
 import { YearCalendar } from '@/components/home/YearCalendar';
-import { useCheckIn } from '@/contexts/CheckInContext';
+import { useCheckIn, useCheckInMode } from '@/contexts/CheckInContext';
 
 export default function Home() {
   const today = new Date();
-  const { getByMonth, checkInRecords, handleCheckIn, switchMode } =
-    useCheckIn();
+  const { mode: checkMode, getByMonth, handleCheckIn } = useCheckIn();
+  const { setMode } = useCheckInMode();
   const [currentDate, setCurrentDate] = useState({
     year: today.getFullYear(),
     month: today.getMonth(),
@@ -60,17 +60,12 @@ export default function Home() {
 
   const currentMode = checkMode;
   const handleSwitchMode = () => {
-    switchMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
+    setMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
   };
 
   return (
     <>
-      <View
-        className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]"
-        style={{
-          filter: 'invert(1)',
-        }}
-      >
+      <View className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]">
         <Image
           className="h-1/2 w-full rounded-b-2xl"
           source={

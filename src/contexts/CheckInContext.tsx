@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 export interface CheckInRecord {
   date: string;
@@ -10,12 +16,45 @@ export interface CheckInRecords {
   data: CheckInRecord[];
 }
 
-interface CheckInContextType {
-  checkInRecords: CheckInRecords;
+interface CheckInContextType extends CheckInRecords {
   handleCheckIn: (date: string, check: boolean) => void;
-  switchMode: (mode: 'limit' | 'exhaustive') => void;
   getByMonth: (year: number, month: number) => number[];
+}
+
+interface CheckInModeContextType {
+  mode: 'limit' | 'exhaustive';
   modeTheme: string;
+  setMode: (mode: 'limit' | 'exhaustive') => void;
+}
+
+const CheckInModeContext = createContext<CheckInModeContextType>({
+  mode: 'limit',
+  modeTheme: '#8AB86E',
+  setMode: () => {},
+});
+
+export function CheckInModeProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [mode, setMode] = useState<'limit' | 'exhaustive'>('limit');
+
+  const modeTheme = useMemo(() => {
+    return mode === 'limit' ? '#8AB86E' : '#E1351F';
+  }, [mode]);
+
+  return (
+    <CheckInModeContext.Provider value={{ mode, setMode, modeTheme }}>
+      {children}
+    </CheckInModeContext.Provider>
+  );
+}
+
+export function useCheckInMode() {
+  const context = useContext(CheckInModeContext);
+
+  return context;
 }
 
 const mockLimitData = {
@@ -36,8 +75,18 @@ const mockExhaustiveData = {
 
 const CheckInContext = createContext<CheckInContextType | undefined>(undefined);
 export function CheckInProvider({ children }: { children: React.ReactNode }) {
+  const { mode } = useCheckInMode();
+
   const [checkInRecords, setCheckInRecords] =
     useState<CheckInRecords>(mockLimitData);
+
+  useEffect(() => {
+    if (mode === 'limit') {
+      setCheckInRecords(mockLimitData);
+    } else {
+      setCheckInRecords(mockExhaustiveData);
+    }
+  }, [mode]);
 
   const groupedRecords = useMemo(() => {
     return groupByMonth(checkInRecords.data);
@@ -66,31 +115,16 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const switchMode = (mode: 'limit' | 'exhaustive') => {
-    setCheckInRecords(() => {
-      if (mode === 'limit') {
-        return mockLimitData;
-      }
-      return mockExhaustiveData;
-    });
-  };
-
   const getByMonth = (year: number, month: number) => {
     return groupedRecords[year]?.[month] || [];
   };
 
-  const modeTheme = useMemo(() => {
-    return checkInRecords.mode === 'limit' ? '#8AB86E' : '#E1351F';
-  }, [checkInRecords.mode]);
-
   return (
     <CheckInContext.Provider
       value={{
-        checkInRecords,
+        ...checkInRecords,
         handleCheckIn,
-        switchMode,
         getByMonth,
-        modeTheme,
       }}
     >
       {children}

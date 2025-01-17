@@ -13,8 +13,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useCheckIn } from '@/contexts/CheckInContext';
-
 interface CalendarDayProps {
   day: number;
   isChecked: boolean;
@@ -47,8 +45,6 @@ export const CalendarDay = ({
 
     onPress?.();
   }, [onPress, scaleAnim, progressAnim, isChecked]);
-
-  const { modeTheme } = useCheckIn();
 
   if (!day) return <View className="h-12 w-12 flex-1" />;
 
