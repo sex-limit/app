@@ -24,8 +24,8 @@ export default function Home() {
 
   const handleToggleDay = useCallback(
     (day: number) => {
-      const dayStr = `${currentDate.year}-${currentDate.month + 1}-${day}`;
-      handleCheckIn(dayStr, !checkedDays.has(dayStr));
+      const dayStr = `${currentDate.year}-${(currentDate.month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+      handleCheckIn(dayStr, !checkedDays.has(day.toString()));
     },
     [checkedDays, currentDate, handleCheckIn],
   );

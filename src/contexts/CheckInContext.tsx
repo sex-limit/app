@@ -101,8 +101,8 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
         return {
           ...prevRecords,
           data: check
-            ? prevRecords.data.filter((record) => record.date !== date)
-            : [...prevRecords.data, { date }],
+            ? [...prevRecords.data]
+            : prevRecords.data.filter((record) => record.date !== date),
         };
       }
       if (check) {
