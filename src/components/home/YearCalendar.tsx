@@ -285,15 +285,16 @@ const ThreeMonthViewPanel = memo(
     const nextMonth = panDate.month === 11 ? 0 : panDate.month + 1;
     const prevYear = panDate.month === 0 ? panDate.year - 1 : panDate.year;
     const nextYear = panDate.month === 11 ? panDate.year + 1 : panDate.year;
-    const emptySet = new Set<string>();
+    const emptySet = useRef(new Set<string>());
+    const idle = useRef(() => {});
     return (
       <>
         <View style={{ width: '33.33%' }}>
           <MonthCalendar
             year={prevYear}
             month={prevMonth}
-            checkedDays={emptySet}
-            onToggleDay={() => {}}
+            checkedDays={emptySet.current}
+            onToggleDay={idle.current}
           />
         </View>
         <View style={{ width: '33.33%' }}>
@@ -301,15 +302,15 @@ const ThreeMonthViewPanel = memo(
             year={panDate.year}
             month={panDate.month}
             checkedDays={checkedDays}
-            onToggleDay={() => {}}
+            onToggleDay={idle.current}
           />
         </View>
         <View style={{ width: '33.33%' }}>
           <MonthCalendar
             year={nextYear}
             month={nextMonth}
-            checkedDays={emptySet}
-            onToggleDay={() => {}}
+            checkedDays={emptySet.current}
+            onToggleDay={idle.current}
           />
         </View>
       </>
