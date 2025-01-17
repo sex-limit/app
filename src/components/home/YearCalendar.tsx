@@ -393,23 +393,20 @@ const MonthViewSwitcher = ({
     },
   });
 
+  const [panCheckedDays, setPanCheckedDays] = useState(checkedDays);
+
+  useEffect(() => {
+    // As the swiping animation is not visible when we update the checkedDays state,
+    // here i delay the child component's state update to avoid blocking the thread.
+    setTimeout(() => {
+      setPanCheckedDays(checkedDays);
+    }, 0);
+  }, [checkedDays]);
+
   return (
     <View className=" min-h-[340px] overflow-hidden">
       <Animated.View
-        style={[
-          {
-            flexDirection: 'row',
-            width: '300%',
-            marginLeft: '-100%',
-          },
-          // swipeOpacityStyle,
-          animatedMonthViewStyle,
-        ]}
-      >
-        <ThreeMonthViewPanel panDate={panDate} checkedDays={checkedDays} />
-      </Animated.View>
-      <Animated.View
-        className="absolute w-full"
+        className="w-full"
         style={[calendarOpacityStyle]}
         {...panResponder.panHandlers}
       >
@@ -419,6 +416,21 @@ const MonthViewSwitcher = ({
           checkedDays={checkedDays}
           onToggleDay={onToggleDay}
         />
+      </Animated.View>
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            flexDirection: 'row',
+            width: '300%',
+            marginLeft: '-100%',
+            pointerEvents: 'none',
+          },
+          // swipeOpacityStyle,
+          animatedMonthViewStyle,
+        ]}
+      >
+        <ThreeMonthViewPanel panDate={panDate} checkedDays={panCheckedDays} />
       </Animated.View>
     </View>
   );
