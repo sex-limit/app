@@ -16,17 +16,19 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-      }}
-      tabBar={(props) => <BototmTabs {...props} />}
-      initialRouteName={'index'}
-    >
-      <Tabs.Screen name="index" options={{ title: '主页' }} />
-      <Tabs.Screen name="community" options={{ title: '社区' }} />
-      <Tabs.Screen name="message" options={{ title: '消息' }} />
-      <Tabs.Screen name="profile" options={{ title: '我的' }} />
-    </Tabs>
+    <>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+        }}
+        tabBar={(props) => <BototmTabs {...props} />}
+        initialRouteName={'index'}
+      >
+        <Tabs.Screen name="index" options={{ title: '主页' }} />
+        <Tabs.Screen name="community" options={{ title: '社区' }} />
+        <Tabs.Screen name="message" options={{ title: '消息' }} />
+        <Tabs.Screen name="profile" options={{ title: '我的' }} />
+      </Tabs>
+    </>
   );
 }

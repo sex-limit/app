@@ -16,6 +16,7 @@ import { CheckInProvider } from '@/contexts/CheckInContext';
 import { hydrateAuth, loadSelectedTheme } from '@/core';
 import { useThemeConfig } from '@/core/use-theme-config';
 import Douyin from '@/shared/native-module/douyin';
+import { FocusAwareStatusBar } from '@/ui';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -46,6 +47,7 @@ function Providers({ children }: { children: React.ReactNode }) {
             <APIProvider>
               <BottomSheetModalProvider>
                 <CheckInProvider>
+                  <FocusAwareStatusBar translucent={true} />
                   {children}
                   <Toast />
                 </CheckInProvider>

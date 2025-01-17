@@ -1,14 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatCard } from '@/components/home/StatCard';
@@ -24,17 +17,6 @@ export default function Home() {
     month: today.getMonth(),
   });
   const [checkedDays, setCheckedDays] = useState<Set<string>>(new Set());
-
-  const colorScheme = useColorScheme();
-  const barStyle = colorScheme === 'dark' ? 'light-content' : 'dark-content';
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      StatusBar.setBackgroundColor('transparent');
-      StatusBar.setBarStyle(barStyle);
-      StatusBar.setTranslucent(true);
-    });
-  });
 
   useEffect(() => {
     setCheckedDays(
