@@ -222,7 +222,7 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
         end ?? new Date(Date.UTC(start.getFullYear(), start.getMonth() + 1, 0));
       const startIndex = binarySearch(records.data, start);
       const endIndex = binarySearch(records.data, end);
-      return records.data.slice(startIndex, endIndex);
+      return records.data.slice(startIndex, endIndex + 1);
     },
     [records.data],
   );
