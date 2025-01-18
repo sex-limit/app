@@ -35,13 +35,41 @@ const CalendarDay = memo(
     }, [record, onToggleDay, day, scaleAnim, progressAnim]);
 
     const animatedThemeColor = useSharedValue(
-      record ? getModeTheme(record?.mode) : undefined,
+      record ? getModeTheme(record?.mode) : '#f5f5f5',
+    );
+
+    // const animatedProgressBgStyle = useAnimatedStyle(() => {
+    //   if (progressAnim.value === 0) {
+    //     return {
+    //       backgroundColor: '#00000000',
+    //     };
+    //   }
+    //   let targetColor = animatedThemeColor.value;
+    //   if (animatedThemeColor.value.startsWith('#')) {
+    //     targetColor = `${animatedThemeColor.value}33`;
+    //   } else if (animatedThemeColor.value.startsWith('rgb(')) {
+    //     let [r, g, b] = animatedThemeColor.value.slice(4, -1).split(',');
+    //     targetColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+    //   } else if (animatedThemeColor.value.startsWith('rgba(')) {
+    //     let [r, g, b] = animatedThemeColor.value.slice(5, -1).split(',');
+    //     targetColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+    //   }
+    //   return {
+    //     backgroundColor: interpolateColor(
+    //       progressAnim.value,
+    //       [0, 1],
+    //       ['#00000000', targetColor],
+    //     ),
+    //   };
+    // });
+    const animatedTextColor = useSharedValue(
+      record ? getModeTheme(record?.mode) : '#333333',
     );
     const animatedThemeColorStyle = useAnimatedStyle(() => ({
       borderColor: animatedThemeColor.value,
     }));
     const animatedTextColorStyle = useAnimatedStyle(() => ({
-      color: animatedThemeColor.value || '#f5f5f5',
+      color: animatedTextColor.value,
     }));
 
     useEffect(() => {
@@ -49,7 +77,11 @@ const CalendarDay = memo(
         record ? getModeTheme(record?.mode) : '#f5f5f5',
         { duration: 200 },
       );
-    }, [record, animatedThemeColor]);
+      animatedTextColor.value = withTiming(
+        record ? getModeTheme(record?.mode) : '#333333',
+        { duration: 50 },
+      );
+    }, [record, animatedThemeColor, animatedTextColor]);
 
     if (!day) return <View className="h-12 w-12 flex-1" />;
 
@@ -69,16 +101,8 @@ const CalendarDay = memo(
             <Animated.View
               className={`absolute h-12 w-12 rounded-full border `}
               style={[
-                // {
-                //   backgroundColor: progressAnim.interpolate({
-                //     inputRange: [0, 1],
-                //     outputRange: [
-                //       'rgba(138, 184, 110, 0)',
-                //       'rgba(138, 184, 110, 0.2)',
-                //     ],
-                //   }),
-                // },
                 animatedThemeColorStyle,
+                // animatedProgressBgStyle
               ]}
             />
           )}
