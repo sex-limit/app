@@ -12,31 +12,32 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatCard } from '@/components/home/StatCard';
 import { YearCalendar } from '@/components/home/YearCalendar';
-import { useCheckIn, useCheckInMode } from '@/contexts/CheckInContext';
+import { useCheckIn } from '@/contexts/CheckInContext';
 
 export default function Home() {
   const today = new Date();
-  const { getByMonth, handleCheckIn } = useCheckIn();
-  const { mode: checkMode, setMode } = useCheckInMode();
+  const { check, currentMode, setMode, getBetween } = useCheckIn();
   const [currentDate, setCurrentDate] = useState({
     year: today.getFullYear(),
     month: today.getMonth(),
   });
   const checkedDays = useMemo(() => {
-    return new Set(
-      getByMonth(currentDate.year, currentDate.month).map((d) => d.toString()),
+    return new Map(
+      getBetween(
+        new Date(Date.UTC(currentDate.year, currentDate.month, 1)),
+        new Date(Date.UTC(currentDate.year, currentDate.month + 1, 0)),
+      ).map((d) => [d.date.toISOString(), d]),
     );
-  }, [currentDate, getByMonth]);
+  }, [currentDate, getBetween]);
 
   const handleToggleDay = useCallback(
     (day: number) => {
-      const dayStr = `${currentDate.year}-${(currentDate.month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-      handleCheckIn(dayStr, !checkedDays.has(day.toString()));
+      check(new Date(Date.UTC(currentDate.year, currentDate.month, day)));
     },
-    [checkedDays, currentDate, handleCheckIn],
+    [currentDate, check],
   );
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = useCallback(() => {
     let year = currentDate.year;
     let month = currentDate.month;
     if (month === 0) {
@@ -46,9 +47,9 @@ export default function Home() {
       month = month - 1;
     }
     setCurrentDate({ year, month });
-  };
+  }, [currentDate.month, currentDate.year]);
 
-  const handleNextMonth = () => {
+  const handleNextMonth = useCallback(() => {
     let year = currentDate.year;
     let month = currentDate.month;
     if (month === 11) {
@@ -58,11 +59,14 @@ export default function Home() {
       month = month + 1;
     }
     setCurrentDate({ year, month });
-  };
+  }, [currentDate.month, currentDate.year]);
 
-  const handleJumpTo = (year: number, month: number) => {
-    setCurrentDate({ year, month });
-  };
+  const handleJumpTo = useCallback(
+    (year: number, month: number) => {
+      setCurrentDate({ year, month });
+    },
+    [setCurrentDate],
+  );
 
   const leftArrowOffset = useSharedValue(0);
   const rightArrowOffset = useSharedValue(0);
@@ -75,7 +79,7 @@ export default function Home() {
     transform: [{ translateX: rightArrowOffset.value }],
   }));
 
-  const handleSwitchMode = () => {
+  const handleSwitchMode = useCallback(() => {
     leftArrowOffset.value = withSequence(
       withTiming(-2, { duration: 150 }),
       withTiming(0, { duration: 150 }),
@@ -84,8 +88,8 @@ export default function Home() {
       withTiming(2, { duration: 150 }),
       withTiming(0, { duration: 150 }),
     );
-    setMode(checkMode === 'limit' ? 'exhaustive' : 'limit');
-  };
+    setMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
+  }, [currentMode, leftArrowOffset, rightArrowOffset, setMode]);
 
   return (
     <>
@@ -93,7 +97,7 @@ export default function Home() {
         <Image
           className="h-1/2 w-full rounded-b-2xl"
           source={
-            checkMode === 'limit'
+            currentMode === 'limit'
               ? require('@/ui/assets/image/home-bg.png')
               : require('@/ui/assets/image/home-bg-red.png')
           }
@@ -192,7 +196,7 @@ export default function Home() {
           </Animated.View>
         </View>
         <Text className="ml-2">
-          切换{checkMode === 'limit' ? '🪷' : '🦌'}模式
+          切换{currentMode === 'limit' ? '🪷' : '🦌'}模式
         </Text>
       </TouchableOpacity>
     </>

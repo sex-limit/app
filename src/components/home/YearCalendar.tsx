@@ -18,6 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import { type CheckInRecord } from '@/contexts/CheckInContext';
 import { getDaysInMonth } from '@/utils/date';
 
 import { MonthCalendar } from './MonthCalendar';
@@ -28,7 +29,7 @@ interface YearCalendarProps {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onJumpTo: (year: number, month: number) => void;
-  checkedDays: Set<string>;
+  checkedDays: Map<string, CheckInRecord>;
   onToggleDay: (day: number) => void;
 }
 
@@ -279,13 +280,13 @@ const ThreeMonthViewPanel = memo(
     checkedDays,
   }: {
     panDate: { year: number; month: number };
-    checkedDays: Set<string>;
+    checkedDays: Map<string, CheckInRecord>;
   }) => {
     const prevMonth = panDate.month === 0 ? 11 : panDate.month - 1;
     const nextMonth = panDate.month === 11 ? 0 : panDate.month + 1;
     const prevYear = panDate.month === 0 ? panDate.year - 1 : panDate.year;
     const nextYear = panDate.month === 11 ? panDate.year + 1 : panDate.year;
-    const emptySet = useRef(new Set<string>());
+    const emptySet = useRef(new Map<string, CheckInRecord>());
     const idle = useRef(() => {});
     return (
       <>
@@ -318,123 +319,125 @@ const ThreeMonthViewPanel = memo(
   },
 );
 
-const MonthViewSwitcher = ({
-  checkedDays,
-  onToggleDay,
-  gotoPrevMonth,
-  gotoNextMonth,
-  monthViewTranslateX,
-  year,
-  month,
-}: {
-  checkedDays: Set<string>;
-  onToggleDay: (day: number) => void;
-  gotoPrevMonth: () => void;
-  gotoNextMonth: () => void;
-  monthViewTranslateX: any;
-  year: number;
-  month: number;
-}) => {
-  // There are (3+1) `calendars` in the view,
-  // the first three are previous, current and next month calendars that show in the swiping effect,
-  // and the last one is the current month calendar that shows in the normal state.
+const MonthViewSwitcher = memo(
+  ({
+    checkedDays,
+    onToggleDay,
+    gotoPrevMonth,
+    gotoNextMonth,
+    monthViewTranslateX,
+    year,
+    month,
+  }: {
+    checkedDays: Map<string, CheckInRecord>;
+    onToggleDay: (day: number) => void;
+    gotoPrevMonth: () => void;
+    gotoNextMonth: () => void;
+    monthViewTranslateX: any;
+    year: number;
+    month: number;
+  }) => {
+    // There are (3+1) `calendars` in the view,
+    // the first three are previous, current and next month calendars that show in the swiping effect,
+    // and the last one is the current month calendar that shows in the normal state.
 
-  const swiping = useDerivedValue(() => {
-    return monthViewTranslateX.value !== 0;
-  });
-  const [panDate, setPanDate] = useState({ year, month });
-
-  const updatePan = useCallback(() => {
-    requestAnimationFrame(() => {
-      setPanDate({ year, month });
+    const swiping = useDerivedValue(() => {
+      return monthViewTranslateX.value !== 0;
     });
-  }, [year, month]);
+    const [panDate, setPanDate] = useState({ year, month });
 
-  useAnimatedReaction(
-    () => swiping.value,
-    (visible) => {
-      if (!visible && (panDate.year !== year || panDate.month !== month)) {
-        runOnJS(updatePan)();
-      }
-    },
-  );
+    const updatePan = useCallback(() => {
+      requestAnimationFrame(() => {
+        setPanDate({ year, month });
+      });
+    }, [year, month]);
 
-  const calendarOpacityStyle = useAnimatedStyle(() => {
-    return {
-      opacity: swiping.value ? 0 : 1,
-    };
-  });
+    useAnimatedReaction(
+      () => swiping.value,
+      (visible) => {
+        if (!visible && (panDate.year !== year || panDate.month !== month)) {
+          runOnJS(updatePan)();
+        }
+      },
+    );
 
-  const animatedMonthViewStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: monthViewTranslateX.value }],
-      opacity: monthViewTranslateX.value !== 0 ? 1 : 0,
-    };
-  });
+    const calendarOpacityStyle = useAnimatedStyle(() => {
+      return {
+        opacity: swiping.value ? 0 : 1,
+      };
+    });
 
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gestureState) => {
-      return Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-    },
-    onPanResponderMove: (_, gestureState) => {
-      monthViewTranslateX.value = gestureState.dx;
-    },
-    onPanResponderRelease: (_, gestureState) => {
-      if (gestureState.dx > 50) {
-        gotoPrevMonth();
-      } else if (gestureState.dx < -50) {
-        gotoNextMonth();
-      } else {
+    const animatedMonthViewStyle = useAnimatedStyle(() => {
+      return {
+        transform: [{ translateX: monthViewTranslateX.value }],
+        opacity: monthViewTranslateX.value !== 0 ? 1 : 0,
+      };
+    });
+
+    const panResponder = PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        monthViewTranslateX.value = gestureState.dx;
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx > 50) {
+          gotoPrevMonth();
+        } else if (gestureState.dx < -50) {
+          gotoNextMonth();
+        } else {
+          monthViewTranslateX.value = withSpring(0);
+        }
+      },
+      onPanResponderTerminate: () => {
         monthViewTranslateX.value = withSpring(0);
-      }
-    },
-    onPanResponderTerminate: () => {
-      monthViewTranslateX.value = withSpring(0);
-    },
-  });
+      },
+    });
 
-  const [panCheckedDays, setPanCheckedDays] = useState(checkedDays);
+    const [panCheckedDays, setPanCheckedDays] = useState(checkedDays);
 
-  useEffect(() => {
-    // As the swiping animation is not visible when we update the checkedDays state,
-    // here i delay the child component's state update to avoid blocking the thread.
-    setTimeout(() => {
-      setPanCheckedDays(checkedDays);
-    }, 0);
-  }, [checkedDays]);
+    useEffect(() => {
+      // As the swiping animation is not visible when we update the checkedDays state,
+      // here i delay the child component's state update to avoid blocking the thread.
+      setTimeout(() => {
+        setPanCheckedDays(checkedDays);
+      }, 0);
+    }, [checkedDays]);
 
-  return (
-    <View className=" min-h-[340px] overflow-hidden">
-      <Animated.View
-        className="w-full"
-        style={[calendarOpacityStyle]}
-        {...panResponder.panHandlers}
-      >
-        <MonthCalendar
-          year={year}
-          month={month}
-          checkedDays={checkedDays}
-          onToggleDay={onToggleDay}
-        />
-      </Animated.View>
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            flexDirection: 'row',
-            width: '300%',
-            marginLeft: '-100%',
-            pointerEvents: 'none',
-          },
-          // swipeOpacityStyle,
-          animatedMonthViewStyle,
-        ]}
-      >
-        <ThreeMonthViewPanel panDate={panDate} checkedDays={panCheckedDays} />
-      </Animated.View>
-    </View>
-  );
-};
+    return (
+      <View className=" min-h-[340px] overflow-hidden">
+        <Animated.View
+          className="w-full"
+          style={[calendarOpacityStyle]}
+          {...panResponder.panHandlers}
+        >
+          <MonthCalendar
+            year={year}
+            month={month}
+            checkedDays={checkedDays}
+            onToggleDay={onToggleDay}
+          />
+        </Animated.View>
+        <Animated.View
+          style={[
+            {
+              position: 'absolute',
+              flexDirection: 'row',
+              width: '300%',
+              marginLeft: '-100%',
+              pointerEvents: 'none',
+            },
+            // swipeOpacityStyle,
+            animatedMonthViewStyle,
+          ]}
+        >
+          <ThreeMonthViewPanel panDate={panDate} checkedDays={panCheckedDays} />
+        </Animated.View>
+      </View>
+    );
+  },
+);
 
 const StatsRow = ({ checkedDays, year, month }: any) => (
   <View className="mt-8 flex-row justify-between">
@@ -480,38 +483,45 @@ export const YearCalendar = ({
 
   const [monthPickerVisible, setMonthPickerVisible] = useState(false);
 
-  const toggleMonthPicker = () => {
+  const toggleMonthPicker = useCallback(() => {
     setMonthPickerVisible(true);
-  };
+  }, [setMonthPickerVisible]);
 
-  const handleSelect = (year: number, month: number) => {
-    selectedYear.current = year;
-    selectedMonth.current = month;
-    setMonthPickerVisible(false);
-    onJumpTo(year, month);
-  };
+  const handleSelect = useCallback(
+    (year: number, month: number) => {
+      selectedYear.current = year;
+      selectedMonth.current = month;
+      setMonthPickerVisible(false);
+      onJumpTo(year, month);
+    },
+    [onJumpTo],
+  );
 
   useEffect(() => {
     monthViewTranslateX.value = 0;
   }, [monthViewTranslateX, year, month]);
 
-  const gotoPrevMonth = () => {
+  const gotoPrevMonth = useCallback(() => {
     monthViewTranslateX.value = withTiming(
       displayWidth,
       { duration: 200 },
       () => {},
     );
     runOnJS(onPrevMonth)();
-  };
+  }, [displayWidth, monthViewTranslateX, onPrevMonth]);
 
-  const gotoNextMonth = () => {
+  const gotoNextMonth = useCallback(() => {
     monthViewTranslateX.value = withTiming(
       -displayWidth,
       { duration: 200 },
       () => {},
     );
     runOnJS(onNextMonth)();
-  };
+  }, [displayWidth, monthViewTranslateX, onNextMonth]);
+
+  const handleCancel = useCallback(() => {
+    setMonthPickerVisible(false);
+  }, [setMonthPickerVisible]);
 
   return (
     <View className="w-full ">
@@ -539,9 +549,7 @@ export const YearCalendar = ({
         month={month}
         onSelect={handleSelect}
         visible={monthPickerVisible}
-        onCancel={() => {
-          setMonthPickerVisible(false);
-        }}
+        onCancel={handleCancel}
       />
       <StatsRow checkedDays={checkedDays} year={year} month={month} />
     </View>

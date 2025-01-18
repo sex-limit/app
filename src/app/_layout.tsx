@@ -12,10 +12,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import { APIProvider } from '@/api';
-import {
-  CheckInModeProvider,
-  CheckInProvider,
-} from '@/contexts/CheckInContext';
+import { CheckInProvider } from '@/contexts/CheckInContext';
 import { hydrateAuth, loadSelectedTheme } from '@/core';
 import { useThemeConfig } from '@/core/use-theme-config';
 import Douyin from '@/shared/native-module/douyin';
@@ -49,13 +46,11 @@ function Providers({ children }: { children: React.ReactNode }) {
           <ThemeProvider value={theme}>
             <APIProvider>
               <BottomSheetModalProvider>
-                <CheckInModeProvider>
-                  <CheckInProvider>
-                    <FocusAwareStatusBar translucent={true} />
-                    {children}
-                    <Toast />
-                  </CheckInProvider>
-                </CheckInModeProvider>
+                <CheckInProvider>
+                  <FocusAwareStatusBar translucent={true} />
+                  {children}
+                  <Toast />
+                </CheckInProvider>
               </BottomSheetModalProvider>
             </APIProvider>
           </ThemeProvider>

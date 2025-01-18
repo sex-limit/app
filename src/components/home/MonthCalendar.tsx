@@ -1,12 +1,7 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
 import { Text, View } from 'react-native';
-import {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 
-import { useCheckInMode } from '@/contexts/CheckInContext';
+import { type CheckInRecord } from '@/contexts/CheckInContext';
 import { getDaysInMonth, getFirstDayOfMonth } from '@/utils/date';
 
 import { CalendarDay } from './CalendarDay';
@@ -14,7 +9,7 @@ import { CalendarDay } from './CalendarDay';
 interface MonthCalendarProps {
   year: number;
   month: number;
-  checkedDays: Set<string>;
+  checkedDays: Map<string, CheckInRecord>;
   onToggleDay: (day: number) => void;
 }
 
@@ -51,19 +46,6 @@ export const MonthCalendar = memo(
 
     const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
 
-    const { modeTheme } = useCheckInMode();
-    const animatedThemeColor = useSharedValue(modeTheme);
-    const animatedThemeColorStyle = useAnimatedStyle(() => ({
-      borderColor: animatedThemeColor.value,
-    }));
-    const animatedTextColorStyle = useAnimatedStyle(() => ({
-      color: animatedThemeColor.value,
-    }));
-
-    useEffect(() => {
-      animatedThemeColor.value = withTiming(modeTheme, { duration: 300 });
-    }, [modeTheme, animatedThemeColor]);
-
     return (
       <View className="flex-1 grow-0 basis-1" style={{ height: 340 }}>
         <View className="mb-2 flex-row">
@@ -83,11 +65,11 @@ export const MonthCalendar = memo(
               <CalendarDay
                 key={dayIndex}
                 day={day}
-                isChecked={checkedDays.has(`${day}`)}
+                record={checkedDays.get(
+                  new Date(Date.UTC(year, month, day)).toISOString(),
+                )}
                 isToday={isCurrentMonth && day === currentDay}
-                onPress={() => day && onToggleDay(day)}
-                animatedThemeColorStyle={animatedThemeColorStyle}
-                animatedTextColorStyle={animatedTextColorStyle}
+                onToggleDay={onToggleDay}
               />
             ))}
           </View>
