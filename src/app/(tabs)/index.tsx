@@ -2,6 +2,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatCard } from '@/components/home/StatCard';
@@ -10,8 +16,8 @@ import { useCheckIn, useCheckInMode } from '@/contexts/CheckInContext';
 
 export default function Home() {
   const today = new Date();
-  const { mode: checkMode, getByMonth, handleCheckIn } = useCheckIn();
-  const { setMode } = useCheckInMode();
+  const { getByMonth, handleCheckIn } = useCheckIn();
+  const { mode: checkMode, setMode } = useCheckInMode();
   const [currentDate, setCurrentDate] = useState({
     year: today.getFullYear(),
     month: today.getMonth(),
@@ -58,9 +64,27 @@ export default function Home() {
     setCurrentDate({ year, month });
   };
 
-  const currentMode = checkMode;
+  const leftArrowOffset = useSharedValue(0);
+  const rightArrowOffset = useSharedValue(0);
+
+  const leftArrowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: leftArrowOffset.value }],
+  }));
+
+  const rightArrowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: rightArrowOffset.value }],
+  }));
+
   const handleSwitchMode = () => {
-    setMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
+    leftArrowOffset.value = withSequence(
+      withTiming(-2, { duration: 150 }),
+      withTiming(0, { duration: 150 }),
+    );
+    rightArrowOffset.value = withSequence(
+      withTiming(2, { duration: 150 }),
+      withTiming(0, { duration: 150 }),
+    );
+    setMode(checkMode === 'limit' ? 'exhaustive' : 'limit');
   };
 
   return (
@@ -69,7 +93,7 @@ export default function Home() {
         <Image
           className="h-1/2 w-full rounded-b-2xl"
           source={
-            currentMode === 'limit'
+            checkMode === 'limit'
               ? require('@/ui/assets/image/home-bg.png')
               : require('@/ui/assets/image/home-bg-red.png')
           }
@@ -149,8 +173,27 @@ export default function Home() {
         className="absolute bottom-[20px] left-1/2 z-20 -translate-x-1/2 flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm"
         onPress={handleSwitchMode}
       >
-        <MaterialCommunityIcons name="swap-horizontal" size={20} color="#666" />
-        <Text className="ml-1">切换模式</Text>
+        <View className="h-[15px] w-[15px]">
+          <Animated.View style={leftArrowStyle}>
+            <MaterialCommunityIcons
+              name="arrow-left-thin"
+              size={15}
+              color="#666"
+              className="absolute translate-x-[-3px] translate-y-[4px]"
+            />
+          </Animated.View>
+          <Animated.View style={rightArrowStyle}>
+            <MaterialCommunityIcons
+              name="arrow-right-thin"
+              size={15}
+              color="#666"
+              className="absolute translate-x-[3px] translate-y-[-2px]"
+            />
+          </Animated.View>
+        </View>
+        <Text className="ml-2">
+          切换{checkMode === 'limit' ? '🪷' : '🦌'}模式
+        </Text>
       </TouchableOpacity>
     </>
   );

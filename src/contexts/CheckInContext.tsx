@@ -11,7 +11,6 @@ export interface CheckInRecord {
 }
 
 export interface CheckInRecords {
-  mode: 'limit' | 'exhaustive';
   total: number;
   data: CheckInRecord[];
 }
@@ -58,7 +57,6 @@ export function useCheckInMode() {
 }
 
 const mockLimitData = {
-  mode: 'limit' as const,
   total: 16,
   data: Array.from({ length: 365 }, (_, index) => ({
     date: new Date(2025, 0, index + 1).toISOString().split('T')[0],
@@ -66,7 +64,6 @@ const mockLimitData = {
 };
 
 const mockExhaustiveData = {
-  mode: 'exhaustive' as const,
   total: 365,
   data: Array.from({ length: 365 }, (_, index) => ({
     date: new Date(2025, 0, index + 1).toISOString().split('T')[0],
