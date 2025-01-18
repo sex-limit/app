@@ -1,7 +1,13 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StatCard } from '@/components/home/StatCard';
@@ -10,33 +16,28 @@ import { useCheckIn } from '@/contexts/CheckInContext';
 
 export default function Home() {
   const today = new Date();
-  const { getByMonth, checkInRecords, handleCheckIn, switchMode } =
-    useCheckIn();
+  const { check, currentMode, setMode, getBetween } = useCheckIn();
   const [currentDate, setCurrentDate] = useState({
     year: today.getFullYear(),
     month: today.getMonth(),
   });
-  const [checkedDays, setCheckedDays] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    setCheckedDays(
-      new Set(
-        getByMonth(currentDate.year, currentDate.month).map((d) =>
-          d.toString(),
-        ),
-      ),
+  const checkedDays = useMemo(() => {
+    return new Map(
+      getBetween(
+        new Date(Date.UTC(currentDate.year, currentDate.month, 1)),
+        new Date(Date.UTC(currentDate.year, currentDate.month + 1, 0)),
+      ).map((d) => [d.date.toISOString(), d]),
     );
-  }, [currentDate, getByMonth]);
+  }, [currentDate, getBetween]);
 
   const handleToggleDay = useCallback(
     (day: number) => {
-      const dayStr = `${currentDate.year}-${currentDate.month + 1}-${day}`;
-      handleCheckIn(dayStr, !checkedDays.has(dayStr));
+      check(new Date(Date.UTC(currentDate.year, currentDate.month, day)));
     },
-    [checkedDays, currentDate, handleCheckIn],
+    [currentDate, check],
   );
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = useCallback(() => {
     let year = currentDate.year;
     let month = currentDate.month;
     if (month === 0) {
@@ -46,9 +47,9 @@ export default function Home() {
       month = month - 1;
     }
     setCurrentDate({ year, month });
-  };
+  }, [currentDate.month, currentDate.year]);
 
-  const handleNextMonth = () => {
+  const handleNextMonth = useCallback(() => {
     let year = currentDate.year;
     let month = currentDate.month;
     if (month === 11) {
@@ -58,25 +59,41 @@ export default function Home() {
       month = month + 1;
     }
     setCurrentDate({ year, month });
-  };
+  }, [currentDate.month, currentDate.year]);
 
-  const handleJumpTo = (year: number, month: number) => {
-    setCurrentDate({ year, month });
-  };
+  const handleJumpTo = useCallback(
+    (year: number, month: number) => {
+      setCurrentDate({ year, month });
+    },
+    [setCurrentDate],
+  );
 
-  const currentMode = checkInRecords.mode;
-  const handleSwitchMode = () => {
-    switchMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
-  };
+  const leftArrowOffset = useSharedValue(0);
+  const rightArrowOffset = useSharedValue(0);
+
+  const leftArrowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: leftArrowOffset.value }],
+  }));
+
+  const rightArrowStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: rightArrowOffset.value }],
+  }));
+
+  const handleSwitchMode = useCallback(() => {
+    leftArrowOffset.value = withSequence(
+      withTiming(-2, { duration: 150 }),
+      withTiming(0, { duration: 150 }),
+    );
+    rightArrowOffset.value = withSequence(
+      withTiming(2, { duration: 150 }),
+      withTiming(0, { duration: 150 }),
+    );
+    setMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
+  }, [currentMode, leftArrowOffset, rightArrowOffset, setMode]);
 
   return (
     <>
-      <View
-        className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]"
-        style={{
-          filter: 'invert(1)',
-        }}
-      >
+      <View className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]">
         <Image
           className="h-1/2 w-full rounded-b-2xl"
           source={
@@ -160,8 +177,27 @@ export default function Home() {
         className="absolute bottom-[20px] left-1/2 z-20 -translate-x-1/2 flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm"
         onPress={handleSwitchMode}
       >
-        <MaterialCommunityIcons name="swap-horizontal" size={20} color="#666" />
-        <Text className="ml-1">切换模式</Text>
+        <View className="h-[15px] w-[15px]">
+          <Animated.View style={leftArrowStyle}>
+            <MaterialCommunityIcons
+              name="arrow-left-thin"
+              size={15}
+              color="#666"
+              className="absolute translate-x-[-3px] translate-y-[4px]"
+            />
+          </Animated.View>
+          <Animated.View style={rightArrowStyle}>
+            <MaterialCommunityIcons
+              name="arrow-right-thin"
+              size={15}
+              color="#666"
+              className="absolute translate-x-[3px] translate-y-[-2px]"
+            />
+          </Animated.View>
+        </View>
+        <Text className="ml-2">
+          切换{currentMode === 'limit' ? '🪷' : '🦌'}模式
+        </Text>
       </TouchableOpacity>
     </>
   );
