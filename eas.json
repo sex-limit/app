@@ -3,6 +3,11 @@
     "version": ">= 0.57.0"
   },
   "build": {
+    "preview": {
+      "ios": {
+        "simulator": true
+      }
+    },
     "production": {
       "channel": "production",
       "distribution": "store",
