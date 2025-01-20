@@ -62,10 +62,10 @@ const PostCard = () => (
       <View className="mb-3 flex-row items-center justify-between">
         <View className="flex-row items-center">
           <Image
-            source={{ uri: 'https://placekitten.com/50/50' }}
+            source={{ uri: 'https://placekitten.com/150/150' }}
             className="h-10 w-10 rounded-full"
           />
-          <View className="ml-3">
+          <View className="ml-3 space-y-1">
             <Text className="font-medium">自己吓自己</Text>
             <Text className="text-gray-500">2天前</Text>
           </View>
@@ -91,11 +91,11 @@ const PostCard = () => (
           className="h-24 w-24 rounded-lg"
         />
         <Image
-          source={{ uri: 'https://placekitten.com/151/150' }}
+          source={{ uri: 'https://placekitten.com/150/150' }}
           className="mx-2 h-24 w-24 rounded-lg"
         />
         <Image
-          source={{ uri: 'https://placekitten.com/152/150' }}
+          source={{ uri: 'https://placekitten.com/150/150' }}
           className="h-24 w-24 rounded-lg"
         />
       </View>
