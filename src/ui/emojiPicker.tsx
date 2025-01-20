@@ -341,7 +341,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
     selectorScaleY.value = withTiming(isExpanded ? 1 : 0.9, { duration: 200 });
     placeholderHeight.value = isExpanded
       ? 240
-      : withDelay(200, withTiming(0, { duration: 100 }));
+      : withDelay(50, withTiming(0, { duration: 200 }));
   }, [isExpanded, selectorOpacity, selectorScaleY, placeholderHeight]);
 
   return (

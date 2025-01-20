@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { QuickNotes } from '@/components/home/QuickNotes';
 import { StatCard } from '@/components/home/StatCard';
 import { YearCalendar } from '@/components/home/YearCalendar';
 import { useCheckIn } from '@/contexts/CheckInContext';
@@ -29,13 +30,6 @@ export default function Home() {
       ).map((d) => [d.date.toISOString(), d]),
     );
   }, [currentDate, getBetween]);
-
-  const handleToggleDay = useCallback(
-    (day: number) => {
-      check(new Date(Date.UTC(currentDate.year, currentDate.month, day)));
-    },
-    [currentDate, check],
-  );
 
   const handlePrevMonth = useCallback(() => {
     let year = currentDate.year;
@@ -90,6 +84,22 @@ export default function Home() {
     );
     setMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
   }, [currentMode, leftArrowOffset, rightArrowOffset, setMode]);
+
+  const quickNotesRef = useRef<typeof QuickNotes>(null);
+
+  const handleQuickNotes = useCallback(() => {
+    quickNotesRef.current?.present();
+  }, []);
+
+  const handleQuickNotesClose = useCallback(() => {}, []);
+
+  const handleToggleDay = useCallback(
+    (day: number) => {
+      handleQuickNotes();
+      check(new Date(Date.UTC(currentDate.year, currentDate.month, day)));
+    },
+    [handleQuickNotes, check, currentDate.year, currentDate.month],
+  );
 
   return (
     <>
@@ -199,6 +209,7 @@ export default function Home() {
           切换{currentMode === 'limit' ? '🪷' : '🦌'}模式
         </Text>
       </TouchableOpacity>
+      <QuickNotes ref={quickNotesRef} onClose={() => {}} onConfirm={() => {}} />
     </>
   );
 }
