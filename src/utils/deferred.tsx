@@ -10,7 +10,7 @@ export function deferred<T extends React.ComponentType<any>>(Component: T) {
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
-      setTimeout(() => setIsMounted(true), 1);
+      requestAnimationFrame(() => setIsMounted(true));
     }, [props]);
 
     return isMounted ? <Component {...props} /> : null;

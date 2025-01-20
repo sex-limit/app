@@ -18,6 +18,7 @@ import {
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withTiming,
 } from 'react-native-reanimated';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -212,7 +213,7 @@ const EmojiTabs: React.FC<EmojiTabsProps> = ({ columns, onEmojiPress }) => {
         },
         onPanResponderEnd: (_, gestureState) => {
           const currentIndex = activeIndex;
-          const swipeThreshold = width.value / 3;
+          const swipeThreshold = width.value / 5;
 
           let newIndex = currentIndex;
 
@@ -298,7 +299,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
   const handleEmojiPress = useCallback(
     (emoji: string) => {
       onEmojiSelected(emoji);
-      setIsExpanded(false);
     },
     [onEmojiSelected],
   );
@@ -325,19 +325,27 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
 
   const selectorOpacity = useSharedValue(0);
   const selectorScaleY = useSharedValue(0);
+  const placeholderHeight = useSharedValue(0);
 
   const selectorStyle = useAnimatedStyle(() => ({
     opacity: selectorOpacity.value,
     transform: [{ scaleY: selectorScaleY.value }],
   }));
 
+  const placeholderStyle = useAnimatedStyle(() => ({
+    height: placeholderHeight.value,
+  }));
+
   useEffect(() => {
     selectorOpacity.value = withTiming(isExpanded ? 1 : 0, { duration: 200 });
     selectorScaleY.value = withTiming(isExpanded ? 1 : 0.9, { duration: 200 });
-  }, [isExpanded, selectorOpacity, selectorScaleY]);
+    placeholderHeight.value = isExpanded
+      ? 240
+      : withDelay(200, withTiming(0, { duration: 100 }));
+  }, [isExpanded, selectorOpacity, selectorScaleY, placeholderHeight]);
 
   return (
-    <View className="flex-col">
+    <View className="relative flex-col">
       <View className="flex-row items-center justify-between">
         {actionBarLeft}
         {FREQUENTLY_USED_EMOJIS.map((emoji) => (
@@ -357,11 +365,16 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
         </TouchableOpacity>
         {actionBarRight}
       </View>
+      <Animated.View style={[placeholderStyle]}></Animated.View>
       <Animated.View
         style={[
           {
             transformOrigin: 'top',
-            height: isExpanded ? 240 : 0,
+            height: 240,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
           },
           selectorStyle,
         ]}
