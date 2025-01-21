@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   Keyboard,
   type LayoutChangeEvent,
@@ -39,16 +40,6 @@ const QuickNotes = forwardRef(
   ({ onClose, onConfirm }: QuickNotesProps, ref) => {
     const [presenting, setPresenting] = useState(false);
     const bottomSheetRef = useRef<BottomSheetModal>(null);
-    const [note, setNote] = useState('');
-
-    const handleSelectEmoji = useCallback(
-      (emoji: string) => {
-        setNote((note) => {
-          return note + emoji;
-        });
-      },
-      [setNote],
-    );
 
     const backdropOpacity = useSharedValue(0);
 
@@ -153,6 +144,28 @@ const QuickNotes = forwardRef(
       };
     }, [handleEmojiPickerToggle]);
 
+    const { control, setValue, handleSubmit, getValues } = useForm({
+      defaultValues: {
+        note: '',
+      },
+    });
+
+    const handleSelectEmoji = useCallback(
+      (emoji: string) => {
+        let note = getValues('note');
+        setValue('note', note + emoji);
+      },
+      [getValues, setValue],
+    );
+
+    const onSubmit = useCallback(
+      (data) => {
+        onConfirm();
+        dismiss();
+      },
+      [onConfirm, dismiss],
+    );
+
     return (
       <>
         <Animated.View
@@ -183,7 +196,7 @@ const QuickNotes = forwardRef(
                 <Text>取消</Text>
               </TouchableOpacity>
               <Text className="text-xl font-bold">小记</Text>
-              <TouchableOpacity onPress={handleConfirm}>
+              <TouchableOpacity onPress={handleSubmit(onSubmit)}>
                 <Text>确认</Text>
               </TouchableOpacity>
             </View>
@@ -191,23 +204,31 @@ const QuickNotes = forwardRef(
             <Text>Todo: plan select</Text>
             {/* Main */}
             <View className="mt-4">
-              <Input
-                value={note}
-                onChangeText={setNote}
-                multiline={true}
-                numberOfLines={8}
-                textAlignVertical="top"
-                placeholder="写一段感想吧..."
-                style={{
-                  marginTop: 8,
-                  marginBottom: 10,
-                  borderRadius: 10,
-                  fontSize: 16,
-                  lineHeight: 20,
-                  height: 160 + 16,
-                  padding: 8,
-                  backgroundColor: '#EBEBEB',
-                }}
+              <Controller
+                control={control}
+                name="note"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                    multiline={true}
+                    numberOfLines={8}
+                    textAlignVertical="top"
+                    placeholder="写一段感想吧..."
+                    style={{
+                      marginTop: 8,
+                      marginBottom: 10,
+                      borderRadius: 10,
+                      fontSize: 16,
+                      lineHeight: 20,
+                      height: 160 + 16,
+                      padding: 8,
+                      color: '#333',
+                      backgroundColor: '#EBEBEB',
+                    }}
+                  />
+                )}
               />
             </View>
 
