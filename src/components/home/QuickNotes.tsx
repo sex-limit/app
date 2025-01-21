@@ -166,16 +166,18 @@ const QuickNotes = forwardRef(
     const handleSelectEmoji = useCallback(
       (emoji: string) => {
         let note = getValues('note');
-        setValue(
-          'note',
-          note.slice(0, selection.current.start) +
-            emoji +
-            note.slice(selection.current.end),
-        );
-        inputRef.current?.setSelection(
-          selection.current.start + emoji.length + 1,
-          selection.current.start + emoji.length + 1,
-        );
+        let prefix = note.slice(0, selection.current.start);
+        let suffix = note.slice(selection.current.end);
+        let newNote = prefix + emoji + suffix;
+        setValue('note', newNote);
+        requestAnimationFrame(() => {
+          let newSelection = {
+            start: selection.current.start + emoji.length,
+            end: selection.current.start + emoji.length,
+          };
+          selection.current = newSelection;
+          inputRef.current?.setSelection(newSelection.start, newSelection.end);
+        });
       },
       [getValues, setValue],
     );
