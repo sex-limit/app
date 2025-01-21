@@ -1,5 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import React, {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -8,7 +9,6 @@ import React, {
 } from 'react';
 import {
   Dimensions,
-  Keyboard,
   type LayoutChangeEvent,
   PanResponder,
   Text,
@@ -18,7 +18,6 @@ import {
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
   withTiming,
 } from 'react-native-reanimated';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -281,106 +280,97 @@ const EmojiTabs: React.FC<EmojiTabsProps> = ({ columns, onEmojiPress }) => {
   );
 };
 
-interface EmojiPickerProps {
+export interface EmojiPickerProps {
   onEmojiSelected: (emoji: string) => void;
-  actionBarLeft?: React.ReactNode;
-  actionBarRight?: React.ReactNode;
+  isExpanded: boolean;
+  onToggleExpand: (isExpanded: boolean) => void;
+  ActionBarLeft?: React.ComponentType;
+  ActionBarRight?: React.ComponentType;
 }
 
 const FREQUENTLY_USED_EMOJIS = ['😊', '😂', '❤️', '👍', '🎉'];
 
-export const EmojiPicker: React.FC<EmojiPickerProps> = ({
-  onEmojiSelected,
-  actionBarLeft,
-  actionBarRight,
-}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const EmojiPicker = memo(
+  ({
+    onEmojiSelected,
+    isExpanded,
+    onToggleExpand,
+    ActionBarLeft,
+    ActionBarRight,
+  }: EmojiPickerProps) => {
+    useEffect(() => {
+      console.log('EmojiPicker render');
+    }, [onEmojiSelected]);
 
-  const handleEmojiPress = useCallback(
-    (emoji: string) => {
-      onEmojiSelected(emoji);
-    },
-    [onEmojiSelected],
-  );
-
-  const handleExpand = useCallback(() => {
-    if (!isExpanded) {
-      Keyboard.dismiss();
-    }
-    setIsExpanded(!isExpanded);
-  }, [isExpanded]);
-
-  useEffect(() => {
-    const keyboardWillShow = () => {
-      setIsExpanded(false);
-    };
-    const showSubscription = Keyboard.addListener(
-      'keyboardDidShow',
-      keyboardWillShow,
+    const handleEmojiPress = useCallback(
+      (emoji: string) => {
+        onEmojiSelected(emoji);
+      },
+      [onEmojiSelected],
     );
-    return () => {
-      showSubscription.remove();
-    };
-  }, []);
 
-  const selectorOpacity = useSharedValue(0);
-  const selectorScaleY = useSharedValue(0);
-  const placeholderHeight = useSharedValue(0);
+    // const isKeyboardShown = useSharedValue(false);
 
-  const selectorStyle = useAnimatedStyle(() => ({
-    opacity: selectorOpacity.value,
-    transform: [{ scaleY: selectorScaleY.value }],
-  }));
+    const handleExpand = useCallback(() => {
+      onToggleExpand(!isExpanded);
+    }, [isExpanded, onToggleExpand]);
 
-  const placeholderStyle = useAnimatedStyle(() => ({
-    height: placeholderHeight.value,
-  }));
+    const selectorOpacity = useSharedValue(0);
 
-  useEffect(() => {
-    selectorOpacity.value = withTiming(isExpanded ? 1 : 0, { duration: 200 });
-    selectorScaleY.value = withTiming(isExpanded ? 1 : 0.9, { duration: 200 });
-    placeholderHeight.value = isExpanded
-      ? 240
-      : withDelay(50, withTiming(0, { duration: 200 }));
-  }, [isExpanded, selectorOpacity, selectorScaleY, placeholderHeight]);
+    const selectorStyle = useAnimatedStyle(() => ({
+      opacity: selectorOpacity.value,
+    }));
 
-  return (
-    <View className="relative flex-col">
-      <View className="flex-row items-center justify-between">
-        {actionBarLeft}
-        {FREQUENTLY_USED_EMOJIS.map((emoji) => (
-          <EmojiItem
-            key={emoji}
-            emoji={emoji}
-            size={20}
-            onPress={handleEmojiPress}
-          />
-        ))}
-        <TouchableOpacity onPress={handleExpand} className="p-2">
-          <MaterialCommunityIcons
-            name="emoticon-excited-outline"
-            size={24}
-            color="#666"
-          />
-        </TouchableOpacity>
-        {actionBarRight}
+    useEffect(() => {
+      // selectorOpacity.value = withTiming(isExpanded ? 1 : 0, { duration: 200 });
+      // selectorScaleY.value = withTiming(isExpanded ? 1 : 0.9, {
+      //   duration: 200,
+      // });
+      selectorOpacity.value = isExpanded ? 1 : 0;
+    }, [isExpanded, selectorOpacity]);
+
+    return (
+      <View className="relative flex-col">
+        <View className="flex-row items-center justify-between">
+          {ActionBarLeft ? <ActionBarLeft /> : null}
+          {FREQUENTLY_USED_EMOJIS.map((emoji) => (
+            <EmojiItem
+              key={emoji}
+              emoji={emoji}
+              size={20}
+              onPress={handleEmojiPress}
+            />
+          ))}
+          <TouchableOpacity onPress={handleExpand} className="p-2">
+            <MaterialCommunityIcons
+              name="emoticon-excited-outline"
+              size={24}
+              color="#666"
+            />
+          </TouchableOpacity>
+          {ActionBarRight ? <ActionBarRight /> : null}
+        </View>
+        <Animated.View
+          style={[
+            {
+              transformOrigin: 'top',
+              height: 240,
+              width: '100%',
+              position: 'relative',
+              bottom: 0,
+              left: 0,
+              right: 0,
+            },
+            selectorStyle,
+          ]}
+        >
+          <EmojiTabs columns={8} onEmojiPress={handleEmojiPress} />
+        </Animated.View>
       </View>
-      <Animated.View style={[placeholderStyle]}></Animated.View>
-      <Animated.View
-        style={[
-          {
-            transformOrigin: 'top',
-            height: 240,
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-          },
-          selectorStyle,
-        ]}
-      >
-        <EmojiTabs columns={8} onEmojiPress={handleEmojiPress} />
-      </Animated.View>
-    </View>
-  );
-};
+    );
+  },
+);
+
+EmojiPicker.displayName = 'EmojiPicker';
+
+export { EmojiPicker };

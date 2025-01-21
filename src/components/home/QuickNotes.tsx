@@ -1,22 +1,28 @@
-import {
-  BottomSheetModal,
-  BottomSheetTextInput,
-  BottomSheetView,
-} from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import {
+  Keyboard,
+  type LayoutChangeEvent,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withTiming,
 } from 'react-native-reanimated';
 
+import { Input } from '@/ui';
 import { EmojiPicker } from '@/ui/emojiPicker';
 
 interface QuickNotesProps {
@@ -50,13 +56,13 @@ const QuickNotes = forwardRef(
     }));
 
     const present = useCallback(() => {
-      backdropOpacity.value = withTiming(1, { duration: 200 });
+      backdropOpacity.value = withDelay(300, withTiming(1, { duration: 100 }));
       bottomSheetRef.current?.present();
       setPresenting(true);
     }, [backdropOpacity]);
 
     const dismiss = useCallback(() => {
-      backdropOpacity.value = withTiming(0, { duration: 200 });
+      backdropOpacity.value = 0;
       bottomSheetRef.current?.dismiss();
       setPresenting(false);
     }, [backdropOpacity]);
@@ -71,10 +77,80 @@ const QuickNotes = forwardRef(
       dismiss();
     }, [onClose, dismiss]);
 
+    const handleBottomSheetChange = useCallback(
+      (index: number) => {
+        if (index === -1) {
+          dismiss();
+        }
+      },
+      [dismiss],
+    );
+
     useImperativeHandle(ref, () => ({
       present,
       dismiss,
     }));
+
+    const [emojiPickerExpanded, setEmojiPickerExpanded] = useState(false);
+
+    const [bottomSheetHeight, setBottomSheetHeight] = useState<number | null>(
+      null,
+    );
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    const handleBottomSheetLayout = useCallback(
+      (event: LayoutChangeEvent) => {
+        if (bottomSheetHeight === null) {
+          setBottomSheetHeight(
+            Math.ceil(event.nativeEvent.layout.height) - 240,
+          );
+        }
+      },
+      [bottomSheetHeight],
+    );
+
+    const snapPoints = useMemo(() => {
+      const emojiPickerHeight = emojiPickerExpanded ? 240 : 0;
+      return [
+        (bottomSheetHeight ?? 300) +
+          Math.max(emojiPickerHeight, keyboardHeight) +
+          40,
+      ];
+    }, [bottomSheetHeight, emojiPickerExpanded, keyboardHeight]);
+
+    const handleEmojiPickerToggle = useCallback((expanded: boolean) => {
+      if (expanded) {
+        Keyboard.dismiss();
+      }
+      setEmojiPickerExpanded(expanded);
+    }, []);
+
+    useEffect(() => {
+      const keyboardWillShow = () => {
+        let metrics = Keyboard.metrics();
+        handleEmojiPickerToggle(false);
+        if (!metrics) {
+          setKeyboardHeight(240);
+        } else {
+          setKeyboardHeight(metrics.height);
+        }
+      };
+      const keyboardWillHide = () => {
+        setKeyboardHeight(0);
+      };
+      const showSubscription = Keyboard.addListener(
+        'keyboardDidShow',
+        keyboardWillShow,
+      );
+      const hideSubscription = Keyboard.addListener(
+        'keyboardDidHide',
+        keyboardWillHide,
+      );
+      return () => {
+        showSubscription.remove();
+        hideSubscription.remove();
+      };
+    }, [handleEmojiPickerToggle]);
 
     return (
       <>
@@ -90,17 +166,16 @@ const QuickNotes = forwardRef(
         />
         <BottomSheetModal
           index={0}
-          onChange={onClose}
+          onChange={handleBottomSheetChange}
           ref={bottomSheetRef}
-          keyboardBehavior="interactive"
+          snapPoints={snapPoints}
+          keyboardBehavior="extend"
           keyboardBlurBehavior="restore"
-          enableContentPanningGesture={true}
+          enableContentPanningGesture={false}
           enableHandlePanningGesture={true}
-          enableDynamicSizing={true}
-          maxDynamicContentSize={600}
-          onDismiss={dismiss}
+          enableOverDrag={true}
         >
-          <BottomSheetView className="rounded-t-2xl bg-white p-4">
+          <BottomSheetView className=" p-4" onLayout={handleBottomSheetLayout}>
             {/* Header */}
             <View className="flex-row items-center justify-between">
               <TouchableOpacity onPress={handleClose}>
@@ -115,7 +190,7 @@ const QuickNotes = forwardRef(
             <Text>Todo: plan select</Text>
             {/* Main */}
             <View className="mt-4">
-              <BottomSheetTextInput
+              <Input
                 value={note}
                 onChangeText={setNote}
                 multiline={true}
@@ -138,9 +213,9 @@ const QuickNotes = forwardRef(
             {/* Footer */}
             <View>
               <EmojiPicker
-                actionBarLeft={
-                  <Text className="flex-1">Todo: image uploader</Text>
-                }
+                isExpanded={emojiPickerExpanded}
+                onToggleExpand={handleEmojiPickerToggle}
+                ActionBarLeft={ImageUpload}
                 onEmojiSelected={handleSelectEmoji}
               />
             </View>
@@ -153,5 +228,9 @@ const QuickNotes = forwardRef(
   QuickNotesProps & React.RefAttributes<QuickNotesMethods>
 > &
   QuickNotesMethods;
+
+const ImageUpload = () => {
+  return <Text className="flex-1">Todo: image uploader</Text>;
+};
 
 export { QuickNotes };
