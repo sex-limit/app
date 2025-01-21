@@ -12,7 +12,10 @@ import { Controller, useForm } from 'react-hook-form';
 import {
   Keyboard,
   type LayoutChangeEvent,
+  type NativeSyntheticEvent,
   Text,
+  type TextInput as NTextInput,
+  type TextInputSelectionChangeEventData,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -144,6 +147,16 @@ const QuickNotes = forwardRef(
       };
     }, [handleEmojiPickerToggle]);
 
+    const selection = useRef({ start: 0, end: 0 });
+    const inputRef = useRef<NTextInput>(null);
+
+    const handleSelectionChange = useCallback(
+      (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+        selection.current = event.nativeEvent.selection;
+      },
+      [selection],
+    );
+
     const { control, setValue, handleSubmit, getValues } = useForm({
       defaultValues: {
         note: '',
@@ -153,7 +166,16 @@ const QuickNotes = forwardRef(
     const handleSelectEmoji = useCallback(
       (emoji: string) => {
         let note = getValues('note');
-        setValue('note', note + emoji);
+        setValue(
+          'note',
+          note.slice(0, selection.current.start) +
+            emoji +
+            note.slice(selection.current.end),
+        );
+        inputRef.current?.setSelection(
+          selection.current.start + emoji.length + 1,
+          selection.current.start + emoji.length + 1,
+        );
       },
       [getValues, setValue],
     );
@@ -211,9 +233,11 @@ const QuickNotes = forwardRef(
                   <Input
                     value={value}
                     onChangeText={onChange}
+                    onSelectionChange={handleSelectionChange}
                     onBlur={onBlur}
                     multiline={true}
                     numberOfLines={8}
+                    ref={inputRef}
                     textAlignVertical="top"
                     placeholder="写一段感想吧..."
                     style={{
