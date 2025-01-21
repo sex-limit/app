@@ -43,10 +43,11 @@ const QuickNotes = forwardRef(
 
     const handleSelectEmoji = useCallback(
       (emoji: string) => {
-        console.log(note, emoji);
-        setNote(note + emoji);
+        setNote((note) => {
+          return note + emoji;
+        });
       },
-      [note, setNote],
+      [setNote],
     );
 
     const backdropOpacity = useSharedValue(0);
