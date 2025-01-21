@@ -23,8 +23,6 @@ import Animated, {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import groupedEmojisJSON from 'unicode-emoji-json/data-by-group.json';
 
-import { deferred } from '@/utils/deferred';
-
 export interface Emoji {
   emoji: string;
   name: string;
@@ -200,6 +198,24 @@ const EmojiTabs: React.FC<EmojiTabsProps> = ({ columns, onEmojiPress }) => {
 
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const [visitedTabs, setVisitedTabs] = useState<boolean[]>(
+    Array.from({ length: EMOJI_CATEGORIES.length }, (_, i) => i === 0),
+  );
+
+  const handleSetActiveTab = useCallback(
+    (index: number) => {
+      setActiveTab(EMOJI_CATEGORIES[index].slug);
+      setActiveIndex(index);
+      if (!visitedTabs[index]) {
+        setVisitedTabs((prev) => {
+          prev[index] = true;
+          return [...prev];
+        });
+      }
+    },
+    [visitedTabs],
+  );
+
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -219,35 +235,30 @@ const EmojiTabs: React.FC<EmojiTabsProps> = ({ columns, onEmojiPress }) => {
           if (Math.abs(gestureState.dx) > swipeThreshold) {
             if (gestureState.dx > 0 && currentIndex > 0) {
               newIndex = currentIndex - 1;
-              setActiveTab(EMOJI_CATEGORIES[newIndex].slug);
             } else if (
               gestureState.dx < 0 &&
               currentIndex < EMOJI_CATEGORIES.length - 1
             ) {
               newIndex = currentIndex + 1;
-              setActiveTab(EMOJI_CATEGORIES[newIndex].slug);
             }
           }
 
-          setActiveIndex(newIndex);
+          handleSetActiveTab(newIndex);
           translateX.value = withTiming(-newIndex * width.value, {
             duration: 300,
           });
         },
       }),
-    [activeIndex, width, translateX],
+    [activeIndex, width.value, translateX, handleSetActiveTab],
   );
 
   const handleTabChange = useCallback(
     (slug: string, index: number) => {
-      setActiveTab(slug);
-      setActiveIndex(index);
+      handleSetActiveTab(index);
       translateX.value = withTiming(-index * width.value, { duration: 300 });
     },
-    [width, translateX],
+    [handleSetActiveTab, translateX, width.value],
   );
-
-  const DeferredEmojiList = useMemo(() => deferred(EmojiList), []);
 
   return (
     <View
@@ -266,15 +277,19 @@ const EmojiTabs: React.FC<EmojiTabsProps> = ({ columns, onEmojiPress }) => {
         ]}
         {...panResponder.panHandlers}
       >
-        {EMOJI_CATEGORIES.map((category) => (
-          <DeferredEmojiList
-            key={category.slug}
-            slug={category.slug}
-            emojis={groupedEmojis[category.slug].emojis}
-            columns={columns}
-            onEmojiPress={onEmojiPress}
-          />
-        ))}
+        {EMOJI_CATEGORIES.map((category, index) =>
+          visitedTabs[index] ? (
+            <EmojiList
+              key={category.slug}
+              slug={category.slug}
+              emojis={groupedEmojis[category.slug].emojis}
+              columns={columns}
+              onEmojiPress={onEmojiPress}
+            />
+          ) : (
+            <View key={category.slug} className="flex-1" />
+          ),
+        )}
       </Animated.View>
     </View>
   );
@@ -298,10 +313,6 @@ const EmojiPicker = memo(
     ActionBarLeft,
     ActionBarRight,
   }: EmojiPickerProps) => {
-    useEffect(() => {
-      console.log('EmojiPicker render');
-    }, [onEmojiSelected]);
-
     const handleEmojiPress = useCallback(
       (emoji: string) => {
         onEmojiSelected(emoji);
@@ -322,10 +333,6 @@ const EmojiPicker = memo(
     }));
 
     useEffect(() => {
-      // selectorOpacity.value = withTiming(isExpanded ? 1 : 0, { duration: 200 });
-      // selectorScaleY.value = withTiming(isExpanded ? 1 : 0.9, {
-      //   duration: 200,
-      // });
       selectorOpacity.value = isExpanded ? 1 : 0;
     }, [isExpanded, selectorOpacity]);
 
