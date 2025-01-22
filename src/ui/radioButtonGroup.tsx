@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
@@ -15,7 +15,7 @@ interface RadioButtonProps<T> {
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
   checked?: boolean;
-  onChange?: (value: T) => void;
+  onChange?: (value: T, checked: boolean) => void;
   color?: string;
   activeColor?: string;
   activeTextColor?: string;
@@ -28,9 +28,10 @@ interface RadioButtonProps<T> {
   labelLines?: number;
 }
 
-interface RadioGroupProps<T> {
-  value?: T;
-  onChange?: (value: T) => void;
+interface RadioGroupProps<T, Opt extends boolean = false> {
+  value: Opt extends true ? T | null : T;
+  onChange?: (value: Opt extends true ? T | null : T) => void;
+  optional: Opt;
   direction?: 'horizontal' | 'vertical';
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
@@ -58,7 +59,8 @@ export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
 
   const handlePress = () => {
     if (!disabled && onChange) {
-      onChange(value);
+      console.log('value', value, 'checked', checked);
+      onChange(value, checked);
     }
     if (!disabled && onPress) {
       onPress();
@@ -111,9 +113,25 @@ export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
   );
 };
 
-export const RadioButtonGroup = <T,>(props: RadioGroupProps<T>) => {
-  const { value, onChange, direction, style, children } = props;
+export const RadioButtonGroup = <T, Opt extends boolean>(
+  props: RadioGroupProps<T, Opt>,
+) => {
+  type V = Opt extends true ? T | null : T;
+  const { value, onChange, direction, style, children, optional } = props;
   const childCount = React.Children.count(children);
+
+  const handleChange = useCallback(
+    (newValue: V, clear = false) => {
+      if (clear && optional && value === newValue) {
+        console.log('clearing');
+        onChange && onChange(null as V);
+      } else if (value !== newValue) {
+        onChange && onChange(newValue);
+      }
+    },
+    [onChange, optional, value],
+  );
+
   return (
     <View
       className="justify-between rounded-md border border-neutral-300"
@@ -134,7 +152,7 @@ export const RadioButtonGroup = <T,>(props: RadioGroupProps<T>) => {
           index: index,
           total: childCount,
           checked: child.props.value === value,
-          onChange: onChange,
+          onChange: handleChange,
         });
       })}
     </View>

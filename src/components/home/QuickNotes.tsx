@@ -237,57 +237,52 @@ const QuickNotes = forwardRef(
 
             <View></View>
             {/* Main */}
-            <View className="mt-6">
+            <View className="mt-4">
               <Controller
                 control={control}
                 name="mode"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <RadioButtonGroup
-                    value={value}
-                    onChange={onChange}
-                    direction="horizontal"
-                  >
-                    <RadioButton
-                      icon={({ checked }) => (
-                        <MaterialCommunityIcons
-                          name="leaf"
-                          size={18}
-                          color={checked ? '#ffffff' : '#84AB62'}
-                        />
-                      )}
-                      label="戒"
-                      value="limit"
-                      activeColor="#84AB62"
-                      activeTextColor="#ffffff"
-                    />
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    {/* <View className="flex-row items-center justify-between">
+                      <Text className="mb-2  font-light text-neutral-100">
+                        今天的状态
+                      </Text>
+                    </View> */}
+                    <RadioButtonGroup
+                      value={value}
+                      onChange={(v) => onChange(v)}
+                      direction="horizontal"
+                      optional={true}
+                    >
+                      <RadioButton
+                        icon={({ checked }) => (
+                          <MaterialCommunityIcons
+                            name="leaf"
+                            size={18}
+                            color={checked ? '#ffffff' : '#84AB62'}
+                          />
+                        )}
+                        label="戒"
+                        value="limit"
+                        activeColor="#84AB62"
+                        activeTextColor="#ffffff"
+                      />
 
-                    <RadioButton
-                      icon={({ checked }) => (
-                        <MaterialCommunityIcons
-                          name="fire"
-                          size={20}
-                          color={checked ? '#ffffff' : '#CD6464'}
-                        />
-                      )}
-                      label="鹿"
-                      value="exhaustive"
-                      activeColor="#CD6464"
-                      activeTextColor="#ffffff"
-                    />
-                    <RadioButton
-                      icon={({ checked }) => (
-                        <MaterialCommunityIcons
-                          name="cancel"
-                          size={18}
-                          color={checked ? '#ffffff' : '#a4a4a4'}
-                        />
-                      )}
-                      label="无"
-                      value={null}
-                      activeColor="#a4a4a4"
-                      activeTextColor="#ffffff"
-                    />
-                  </RadioButtonGroup>
+                      <RadioButton
+                        icon={({ checked }) => (
+                          <MaterialCommunityIcons
+                            name="fire"
+                            size={20}
+                            color={checked ? '#ffffff' : '#CD6464'}
+                          />
+                        )}
+                        label="鹿"
+                        value="exhaustive"
+                        activeColor="#CD6464"
+                        activeTextColor="#ffffff"
+                      />
+                    </RadioButtonGroup>
+                  </>
                 )}
               />
               <Controller
