@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, {
   forwardRef,
@@ -26,8 +27,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { type CheckInRecord } from '@/contexts/CheckInContext';
 import { Input } from '@/ui';
 import { EmojiPicker } from '@/ui/emojiPicker';
+import { RadioButton, RadioButtonGroup } from '@/ui/radioButtonGroup';
 
 interface QuickNotesProps {
   onClose: () => void;
@@ -38,6 +41,11 @@ interface QuickNotesMethods {
   present: () => void;
   dismiss: () => void;
 }
+
+export type NoteData = {
+  note: string;
+  mode: CheckInRecord['mode'] | null;
+};
 
 const QuickNotes = forwardRef(
   ({ onClose, onConfirm }: QuickNotesProps, ref) => {
@@ -157,9 +165,10 @@ const QuickNotes = forwardRef(
       [selection],
     );
 
-    const { control, setValue, handleSubmit, getValues } = useForm({
+    const { control, setValue, handleSubmit, getValues } = useForm<NoteData>({
       defaultValues: {
         note: '',
+        mode: 'limit',
       },
     });
 
@@ -183,7 +192,8 @@ const QuickNotes = forwardRef(
     );
 
     const onSubmit = useCallback(
-      (data) => {
+      (data: NoteData) => {
+        console.log(data);
         onConfirm();
         dismiss();
       },
@@ -225,9 +235,61 @@ const QuickNotes = forwardRef(
               </TouchableOpacity>
             </View>
 
-            <Text>Todo: plan select</Text>
+            <View></View>
             {/* Main */}
-            <View className="mt-4">
+            <View className="mt-6">
+              <Controller
+                control={control}
+                name="mode"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <RadioButtonGroup
+                    value={value}
+                    onChange={onChange}
+                    direction="horizontal"
+                  >
+                    <RadioButton
+                      icon={({ checked }) => (
+                        <MaterialCommunityIcons
+                          name="leaf"
+                          size={18}
+                          color={checked ? '#ffffff' : '#84AB62'}
+                        />
+                      )}
+                      label="戒"
+                      value="limit"
+                      activeColor="#84AB62"
+                      activeTextColor="#ffffff"
+                    />
+
+                    <RadioButton
+                      icon={({ checked }) => (
+                        <MaterialCommunityIcons
+                          name="fire"
+                          size={20}
+                          color={checked ? '#ffffff' : '#CD6464'}
+                        />
+                      )}
+                      label="鹿"
+                      value="exhaustive"
+                      activeColor="#CD6464"
+                      activeTextColor="#ffffff"
+                    />
+                    <RadioButton
+                      icon={({ checked }) => (
+                        <MaterialCommunityIcons
+                          name="cancel"
+                          size={18}
+                          color={checked ? '#ffffff' : '#a4a4a4'}
+                        />
+                      )}
+                      label="无"
+                      value={null}
+                      activeColor="#a4a4a4"
+                      activeTextColor="#ffffff"
+                    />
+                  </RadioButtonGroup>
+                )}
+              />
               <Controller
                 control={control}
                 name="note"
