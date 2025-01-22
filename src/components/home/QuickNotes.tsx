@@ -32,25 +32,32 @@ import { Input } from '@/ui';
 import { EmojiPicker } from '@/ui/emojiPicker';
 import { RadioButton, RadioButtonGroup } from '@/ui/radioButtonGroup';
 
-interface QuickNotesProps {
-  onClose: () => void;
-  onConfirm: () => void;
-}
-
-interface QuickNotesMethods {
-  present: () => void;
-  dismiss: () => void;
-}
-
 export type NoteData = {
   note: string;
   mode: CheckInRecord['mode'] | null;
 };
 
+interface QuickNotesProps {
+  onClose: () => void;
+  onConfirm: (note: NoteData, date: Date) => void;
+}
+
+interface QuickNotesMethods {
+  present: (date: Date, initialMode: string, initialNote: string) => void;
+  dismiss: () => void;
+}
+
 const QuickNotes = forwardRef(
   ({ onClose, onConfirm }: QuickNotesProps, ref) => {
     const [presenting, setPresenting] = useState(false);
     const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+    const { control, setValue, handleSubmit, getValues } = useForm<NoteData>({
+      defaultValues: {
+        note: '',
+        mode: 'limit',
+      },
+    });
 
     const backdropOpacity = useSharedValue(0);
 
@@ -58,22 +65,28 @@ const QuickNotes = forwardRef(
       opacity: backdropOpacity.value,
     }));
 
-    const present = useCallback(() => {
-      backdropOpacity.value = withDelay(300, withTiming(1, { duration: 100 }));
-      bottomSheetRef.current?.present();
-      setPresenting(true);
-    }, [backdropOpacity]);
+    const [currentDate, setCurrentDate] = useState(new Date());
+
+    const present = useCallback(
+      (date: Date, initialMode: string, initialNote: string) => {
+        setValue('note', initialNote);
+        setValue('mode', initialMode as any);
+        backdropOpacity.value = withDelay(
+          300,
+          withTiming(1, { duration: 100 }),
+        );
+        setCurrentDate(date);
+        setPresenting(true);
+        bottomSheetRef.current?.present();
+      },
+      [backdropOpacity, setValue],
+    );
 
     const dismiss = useCallback(() => {
       backdropOpacity.value = 0;
       bottomSheetRef.current?.dismiss();
       setPresenting(false);
     }, [backdropOpacity]);
-
-    const handleConfirm = useCallback(() => {
-      onConfirm();
-      dismiss();
-    }, [onConfirm, dismiss]);
 
     const handleClose = useCallback(() => {
       onClose();
@@ -165,13 +178,6 @@ const QuickNotes = forwardRef(
       [selection],
     );
 
-    const { control, setValue, handleSubmit, getValues } = useForm<NoteData>({
-      defaultValues: {
-        note: '',
-        mode: 'limit',
-      },
-    });
-
     const handleSelectEmoji = useCallback(
       (emoji: string) => {
         let note = getValues('note');
@@ -193,11 +199,10 @@ const QuickNotes = forwardRef(
 
     const onSubmit = useCallback(
       (data: NoteData) => {
-        console.log(data);
-        onConfirm();
+        onConfirm(data, currentDate);
         dismiss();
       },
-      [onConfirm, dismiss],
+      [currentDate, onConfirm, dismiss],
     );
 
     return (

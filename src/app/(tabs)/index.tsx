@@ -4,14 +4,14 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { QuickNotes } from '@/components/home/QuickNotes';
+import { type NoteData, QuickNotes } from '@/components/home/QuickNotes';
 import { StatCard } from '@/components/home/StatCard';
 import { YearCalendar } from '@/components/home/YearCalendar';
 import { useCheckIn } from '@/contexts/CheckInContext';
 
 export default function Home() {
   const today = new Date();
-  const { check, currentMode, setMode, getBetween } = useCheckIn();
+  const { setRecord, getBetween, deleteRecord } = useCheckIn();
   const [currentDate, setCurrentDate] = useState({
     year: today.getFullYear(),
     month: today.getMonth(),
@@ -58,18 +58,37 @@ export default function Home() {
 
   const quickNotesRef = useRef<typeof QuickNotes>(null);
 
-  const handleQuickNotes = useCallback(() => {
-    quickNotesRef.current?.present();
-  }, []);
-
-  const handleQuickNotesClose = useCallback(() => {}, []);
+  const handleQuickNotes = useCallback(
+    (date: Date, initialMode: string, initialNote: string) => {
+      quickNotesRef.current?.present(date, initialMode, initialNote);
+    },
+    [],
+  );
 
   const handleToggleDay = useCallback(
     (day: number) => {
-      handleQuickNotes();
-      check(new Date(Date.UTC(currentDate.year, currentDate.month, day)));
+      const date = new Date(Date.UTC(currentDate.year, currentDate.month, day));
+      const record = checkedDays.get(date.toISOString());
+      handleQuickNotes(date, record?.mode ?? 'limit', record?.note ?? '');
     },
-    [handleQuickNotes, check, currentDate.year, currentDate.month],
+    [currentDate.year, currentDate.month, checkedDays, handleQuickNotes],
+  );
+
+  const handleQuickNotesClose = useCallback(() => {}, []);
+
+  const handleQuickNotesConfirm = useCallback(
+    (note: NoteData, date: Date) => {
+      if (note.mode === null) {
+        deleteRecord(date);
+      } else {
+        setRecord({
+          date,
+          mode: note.mode,
+          note: note.note,
+        });
+      }
+    },
+    [deleteRecord, setRecord],
   );
 
   return (
@@ -77,11 +96,7 @@ export default function Home() {
       <View className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]">
         <Image
           className="h-1/2 w-full rounded-b-2xl"
-          source={
-            currentMode === 'limit'
-              ? require('@/ui/assets/image/home-bg.png')
-              : require('@/ui/assets/image/home-bg-red.png')
-          }
+          source={require('@/ui/assets/image/home-bg.png')}
         />
       </View>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
