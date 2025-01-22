@@ -1,13 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { QuickNotes } from '@/components/home/QuickNotes';
@@ -61,29 +55,6 @@ export default function Home() {
     },
     [setCurrentDate],
   );
-
-  const leftArrowOffset = useSharedValue(0);
-  const rightArrowOffset = useSharedValue(0);
-
-  const leftArrowStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: leftArrowOffset.value }],
-  }));
-
-  const rightArrowStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: rightArrowOffset.value }],
-  }));
-
-  const handleSwitchMode = useCallback(() => {
-    leftArrowOffset.value = withSequence(
-      withTiming(-2, { duration: 150 }),
-      withTiming(0, { duration: 150 }),
-    );
-    rightArrowOffset.value = withSequence(
-      withTiming(2, { duration: 150 }),
-      withTiming(0, { duration: 150 }),
-    );
-    setMode(currentMode === 'limit' ? 'exhaustive' : 'limit');
-  }, [currentMode, leftArrowOffset, rightArrowOffset, setMode]);
 
   const quickNotesRef = useRef<typeof QuickNotes>(null);
 
@@ -182,34 +153,12 @@ export default function Home() {
           </View>
         </SafeAreaView>
       </ScrollView>
-      <TouchableOpacity
-        activeOpacity={0.6}
-        className="absolute bottom-[20px] left-1/2 z-20 -translate-x-1/2 flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm"
-        onPress={handleSwitchMode}
-      >
-        <View className="h-[15px] w-[15px]">
-          <Animated.View style={leftArrowStyle}>
-            <MaterialCommunityIcons
-              name="arrow-left-thin"
-              size={15}
-              color="#666"
-              className="absolute translate-x-[-3px] translate-y-[4px]"
-            />
-          </Animated.View>
-          <Animated.View style={rightArrowStyle}>
-            <MaterialCommunityIcons
-              name="arrow-right-thin"
-              size={15}
-              color="#666"
-              className="absolute translate-x-[3px] translate-y-[-2px]"
-            />
-          </Animated.View>
-        </View>
-        <Text className="ml-2">
-          切换{currentMode === 'limit' ? '🪷' : '🦌'}模式
-        </Text>
-      </TouchableOpacity>
-      <QuickNotes ref={quickNotesRef} onClose={() => {}} onConfirm={() => {}} />
+
+      <QuickNotes
+        ref={quickNotesRef}
+        onClose={handleQuickNotesClose}
+        onConfirm={handleQuickNotesConfirm}
+      />
     </>
   );
 }
