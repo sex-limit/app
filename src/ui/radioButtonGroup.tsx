@@ -59,7 +59,6 @@ export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
 
   const handlePress = () => {
     if (!disabled && onChange) {
-      console.log('value', value, 'checked', checked);
       onChange(value, checked);
     }
     if (!disabled && onPress) {
@@ -123,7 +122,6 @@ export const RadioButtonGroup = <T, Opt extends boolean>(
   const handleChange = useCallback(
     (newValue: V, clear = false) => {
       if (clear && optional && value === newValue) {
-        console.log('clearing');
         onChange && onChange(null as V);
       } else if (value !== newValue) {
         onChange && onChange(newValue);

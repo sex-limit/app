@@ -231,12 +231,25 @@ const QuickNotes = forwardRef(
           <BottomSheetView className=" p-4" onLayout={handleBottomSheetLayout}>
             {/* Header */}
             <View className="flex-row items-center justify-between">
-              <TouchableOpacity onPress={handleClose}>
-                <Text>取消</Text>
+              <TouchableOpacity
+                onPress={handleClose}
+                className="flex-row items-center"
+              >
+                <MaterialCommunityIcons name="close" size={24} color="#333" />
+                {/* <Text>取消</Text> */}
               </TouchableOpacity>
-              <Text className="text-xl font-bold">小记</Text>
-              <TouchableOpacity onPress={handleSubmit(onSubmit)}>
-                <Text>确认</Text>
+              <View className="flex-col items-center">
+                <Text className="text-xl font-bold">打卡</Text>
+                <Text className="text-sm text-neutral-500">
+                  {currentDate.toLocaleDateString()}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={handleSubmit(onSubmit)}
+                className="flex-row items-center"
+              >
+                <MaterialCommunityIcons name="check" size={24} color="#333" />
+                {/* <Text>确认</Text> */}
               </TouchableOpacity>
             </View>
 
