@@ -32,25 +32,32 @@ import { Input } from '@/ui';
 import { EmojiPicker } from '@/ui/emojiPicker';
 import { RadioButton, RadioButtonGroup } from '@/ui/radioButtonGroup';
 
-interface QuickNotesProps {
-  onClose: () => void;
-  onConfirm: () => void;
-}
-
-interface QuickNotesMethods {
-  present: () => void;
-  dismiss: () => void;
-}
-
 export type NoteData = {
   note: string;
   mode: CheckInRecord['mode'] | null;
 };
 
+interface QuickNotesProps {
+  onClose: () => void;
+  onConfirm: (note: NoteData, date: Date) => void;
+}
+
+interface QuickNotesMethods {
+  present: (date: Date, initialMode: string, initialNote: string) => void;
+  dismiss: () => void;
+}
+
 const QuickNotes = forwardRef(
   ({ onClose, onConfirm }: QuickNotesProps, ref) => {
     const [presenting, setPresenting] = useState(false);
     const bottomSheetRef = useRef<BottomSheetModal>(null);
+
+    const { control, setValue, handleSubmit, getValues } = useForm<NoteData>({
+      defaultValues: {
+        note: '',
+        mode: 'limit',
+      },
+    });
 
     const backdropOpacity = useSharedValue(0);
 
@@ -58,22 +65,28 @@ const QuickNotes = forwardRef(
       opacity: backdropOpacity.value,
     }));
 
-    const present = useCallback(() => {
-      backdropOpacity.value = withDelay(300, withTiming(1, { duration: 100 }));
-      bottomSheetRef.current?.present();
-      setPresenting(true);
-    }, [backdropOpacity]);
+    const [currentDate, setCurrentDate] = useState(new Date());
+
+    const present = useCallback(
+      (date: Date, initialMode: string, initialNote: string) => {
+        setValue('note', initialNote);
+        setValue('mode', initialMode as any);
+        backdropOpacity.value = withDelay(
+          300,
+          withTiming(1, { duration: 100 }),
+        );
+        setCurrentDate(date);
+        setPresenting(true);
+        bottomSheetRef.current?.present();
+      },
+      [backdropOpacity, setValue],
+    );
 
     const dismiss = useCallback(() => {
       backdropOpacity.value = 0;
       bottomSheetRef.current?.dismiss();
       setPresenting(false);
     }, [backdropOpacity]);
-
-    const handleConfirm = useCallback(() => {
-      onConfirm();
-      dismiss();
-    }, [onConfirm, dismiss]);
 
     const handleClose = useCallback(() => {
       onClose();
@@ -165,13 +178,6 @@ const QuickNotes = forwardRef(
       [selection],
     );
 
-    const { control, setValue, handleSubmit, getValues } = useForm<NoteData>({
-      defaultValues: {
-        note: '',
-        mode: 'limit',
-      },
-    });
-
     const handleSelectEmoji = useCallback(
       (emoji: string) => {
         let note = getValues('note');
@@ -193,11 +199,10 @@ const QuickNotes = forwardRef(
 
     const onSubmit = useCallback(
       (data: NoteData) => {
-        console.log(data);
-        onConfirm();
+        onConfirm(data, currentDate);
         dismiss();
       },
-      [onConfirm, dismiss],
+      [currentDate, onConfirm, dismiss],
     );
 
     return (
@@ -226,68 +231,76 @@ const QuickNotes = forwardRef(
           <BottomSheetView className=" p-4" onLayout={handleBottomSheetLayout}>
             {/* Header */}
             <View className="flex-row items-center justify-between">
-              <TouchableOpacity onPress={handleClose}>
-                <Text>取消</Text>
+              <TouchableOpacity
+                onPress={handleClose}
+                className="flex-row items-center"
+              >
+                <MaterialCommunityIcons name="close" size={24} color="#333" />
+                {/* <Text>取消</Text> */}
               </TouchableOpacity>
-              <Text className="text-xl font-bold">小记</Text>
-              <TouchableOpacity onPress={handleSubmit(onSubmit)}>
-                <Text>确认</Text>
+              <View className="flex-col items-center">
+                <Text className="text-xl font-bold">打卡</Text>
+                <Text className="text-sm text-neutral-500">
+                  {currentDate.toLocaleDateString()}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={handleSubmit(onSubmit)}
+                className="flex-row items-center"
+              >
+                <MaterialCommunityIcons name="check" size={24} color="#333" />
+                {/* <Text>确认</Text> */}
               </TouchableOpacity>
             </View>
 
             <View></View>
             {/* Main */}
-            <View className="mt-6">
+            <View className="mt-4">
               <Controller
                 control={control}
                 name="mode"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <RadioButtonGroup
-                    value={value}
-                    onChange={onChange}
-                    direction="horizontal"
-                  >
-                    <RadioButton
-                      icon={({ checked }) => (
-                        <MaterialCommunityIcons
-                          name="leaf"
-                          size={18}
-                          color={checked ? '#ffffff' : '#84AB62'}
-                        />
-                      )}
-                      label="戒"
-                      value="limit"
-                      activeColor="#84AB62"
-                      activeTextColor="#ffffff"
-                    />
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    {/* <View className="flex-row items-center justify-between">
+                      <Text className="mb-2  font-light text-neutral-100">
+                        今天的状态
+                      </Text>
+                    </View> */}
+                    <RadioButtonGroup
+                      value={value}
+                      onChange={(v) => onChange(v)}
+                      direction="horizontal"
+                      optional={true}
+                    >
+                      <RadioButton
+                        icon={({ checked }) => (
+                          <MaterialCommunityIcons
+                            name="leaf"
+                            size={18}
+                            color={checked ? '#ffffff' : '#84AB62'}
+                          />
+                        )}
+                        label="戒"
+                        value="limit"
+                        activeColor="#84AB62"
+                        activeTextColor="#ffffff"
+                      />
 
-                    <RadioButton
-                      icon={({ checked }) => (
-                        <MaterialCommunityIcons
-                          name="fire"
-                          size={20}
-                          color={checked ? '#ffffff' : '#CD6464'}
-                        />
-                      )}
-                      label="鹿"
-                      value="exhaustive"
-                      activeColor="#CD6464"
-                      activeTextColor="#ffffff"
-                    />
-                    <RadioButton
-                      icon={({ checked }) => (
-                        <MaterialCommunityIcons
-                          name="cancel"
-                          size={18}
-                          color={checked ? '#ffffff' : '#a4a4a4'}
-                        />
-                      )}
-                      label="无"
-                      value={null}
-                      activeColor="#a4a4a4"
-                      activeTextColor="#ffffff"
-                    />
-                  </RadioButtonGroup>
+                      <RadioButton
+                        icon={({ checked }) => (
+                          <MaterialCommunityIcons
+                            name="fire"
+                            size={20}
+                            color={checked ? '#ffffff' : '#CD6464'}
+                          />
+                        )}
+                        label="鹿"
+                        value="exhaustive"
+                        activeColor="#CD6464"
+                        activeTextColor="#ffffff"
+                      />
+                    </RadioButtonGroup>
+                  </>
                 )}
               />
               <Controller
