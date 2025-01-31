@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { type NoteData, QuickNotes } from '@/components/home/QuickNotes';
 import { StatCard } from '@/components/home/StatCard';
 import { YearCalendar } from '@/components/home/YearCalendar';
-import { useCheckIn } from '@/contexts/CheckInContext';
+import { type RecordMode, useCheckIn } from '@/contexts/CheckInContext';
 
 export default function Home() {
   const today = new Date();
@@ -59,8 +59,19 @@ export default function Home() {
   const quickNotesRef = useRef<typeof QuickNotes>(null);
 
   const handleQuickNotes = useCallback(
-    (date: Date, initialMode: string, initialNote: string) => {
-      quickNotesRef.current?.present(date, initialMode, initialNote);
+    (
+      date: Date,
+      initialMode: RecordMode,
+      initialNote: string,
+      initialCount: number | null,
+      // eslint-disable-next-line max-params
+    ) => {
+      quickNotesRef.current?.present(
+        date,
+        initialMode,
+        initialNote,
+        initialCount,
+      );
     },
     [],
   );
@@ -69,7 +80,12 @@ export default function Home() {
     (day: number) => {
       const date = new Date(Date.UTC(currentDate.year, currentDate.month, day));
       const record = checkedDays.get(date.toISOString());
-      handleQuickNotes(date, record?.mode ?? 'limit', record?.note ?? '');
+      handleQuickNotes(
+        date,
+        record?.record.mode ?? 'limit',
+        record?.note ?? '',
+        record?.record.count ?? null,
+      );
     },
     [currentDate.year, currentDate.month, checkedDays, handleQuickNotes],
   );
@@ -78,12 +94,12 @@ export default function Home() {
 
   const handleQuickNotesConfirm = useCallback(
     (note: NoteData, date: Date) => {
-      if (note.mode === null) {
+      if (note.record === null) {
         deleteRecord(date);
       } else {
         setRecord({
           date,
-          mode: note.mode,
+          record: note.record,
           note: note.note,
         });
       }

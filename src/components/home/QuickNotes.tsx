@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { TouchableRipple } from 'react-native-paper';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -27,14 +28,74 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { type CheckInRecord } from '@/contexts/CheckInContext';
+import { type CheckInRecord, type RecordMode } from '@/contexts/CheckInContext';
 import { Input } from '@/ui';
 import { EmojiPicker } from '@/ui/emojiPicker';
-import { RadioButton, RadioButtonGroup } from '@/ui/radioButtonGroup';
+import {
+  RadioButton,
+  RadioButtonGroup,
+  type RadioButtonProps,
+} from '@/ui/radioButtonGroup';
 
 export type NoteData = {
   note: string;
-  mode: CheckInRecord['mode'] | null;
+  record: CheckInRecord['record'] | null;
+  count?: number;
+};
+
+export interface NumericRadioButtonProps<T> extends RadioButtonProps<T> {
+  count: number;
+  onCountChange?: (value: T, count: number) => void;
+}
+
+export const NumericRadioButton = <T,>({
+  ...props
+}: NumericRadioButtonProps<T>) => {
+  const label = useMemo(() => {
+    if (props.count && props.count !== 0) {
+      return `${props.label} x${props.count}`;
+    }
+    return props.label;
+  }, [props.count, props.label]);
+  const onPlus = useCallback(() => {
+    props.onCountChange && props.onCountChange(props.value, props.count + 1);
+  }, [props]);
+  const onMinus = useCallback(() => {
+    if (props.count <= 1) {
+      return;
+    }
+    props.onCountChange && props.onCountChange(props.value, props.count - 1);
+  }, [props]);
+
+  if (props.count === null || !props.checked) {
+    return <RadioButton {...props} />;
+  }
+
+  return (
+    <View className="grow basis-10 flex-row items-stretch justify-between">
+      <RadioButton {...props} label={label} onChange={onPlus} />
+      <TouchableRipple
+        onPress={onMinus}
+        className="absolute left-0 h-full w-10 items-center justify-center border-r border-neutral-300/30 p-2"
+      >
+        <MaterialCommunityIcons
+          name="minus"
+          size={18}
+          color={props.activeTextColor}
+        />
+      </TouchableRipple>
+      <TouchableRipple
+        onPress={onPlus}
+        className="absolute right-0 h-full w-10 items-center justify-center border-l border-neutral-300/30 p-2"
+      >
+        <MaterialCommunityIcons
+          name="plus"
+          size={18}
+          color={props.activeTextColor}
+        />
+      </TouchableRipple>
+    </View>
+  );
 };
 
 interface QuickNotesProps {
@@ -43,7 +104,12 @@ interface QuickNotesProps {
 }
 
 interface QuickNotesMethods {
-  present: (date: Date, initialMode: string, initialNote: string) => void;
+  present: (
+    date: Date,
+    initialMode: RecordMode,
+    initialNote: string,
+    initialCount: number | null,
+  ) => void;
   dismiss: () => void;
 }
 
@@ -55,7 +121,10 @@ const QuickNotes = forwardRef(
     const { control, setValue, handleSubmit, getValues } = useForm<NoteData>({
       defaultValues: {
         note: '',
-        mode: 'limit',
+        record: {
+          mode: 'limit',
+          count: null,
+        },
       },
     });
 
@@ -68,9 +137,15 @@ const QuickNotes = forwardRef(
     const [currentDate, setCurrentDate] = useState(new Date());
 
     const present = useCallback(
-      (date: Date, initialMode: string, initialNote: string) => {
+      (
+        date: Date,
+        initialMode: RecordMode,
+        initialNote: string,
+        initialCount: number | null = null,
+        // eslint-disable-next-line max-params
+      ) => {
         setValue('note', initialNote);
-        setValue('mode', initialMode as any);
+        setValue('record', { mode: initialMode, count: initialCount });
         backdropOpacity.value = withDelay(
           300,
           withTiming(1, { duration: 100 }),
@@ -258,7 +333,7 @@ const QuickNotes = forwardRef(
             <View className="mt-4">
               <Controller
                 control={control}
-                name="mode"
+                name="record"
                 render={({ field: { onChange, value } }) => (
                   <>
                     {/* <View className="flex-row items-center justify-between">
@@ -267,8 +342,8 @@ const QuickNotes = forwardRef(
                       </Text>
                     </View> */}
                     <RadioButtonGroup
-                      value={value}
-                      onChange={(v) => onChange(v)}
+                      value={value?.mode ?? null}
+                      onChange={(v) => onChange({ mode: v, count: 1 })}
                       direction="horizontal"
                       optional={true}
                     >
@@ -285,8 +360,7 @@ const QuickNotes = forwardRef(
                         activeColor="#84AB62"
                         activeTextColor="#ffffff"
                       />
-
-                      <RadioButton
+                      <NumericRadioButton
                         icon={({ checked }) => (
                           <MaterialCommunityIcons
                             name="fire"
@@ -295,6 +369,10 @@ const QuickNotes = forwardRef(
                           />
                         )}
                         label="鹿"
+                        count={value?.count ?? 0}
+                        onCountChange={(v, c) =>
+                          onChange({ mode: v, count: c })
+                        }
                         value="exhaustive"
                         activeColor="#CD6464"
                         activeTextColor="#ffffff"

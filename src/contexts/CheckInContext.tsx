@@ -10,17 +10,20 @@ export type RecordMode = 'limit' | 'exhaustive';
 
 export interface CheckInRecord {
   date: Date;
-  mode: RecordMode;
+  record: {
+    mode: RecordMode;
+    count: number | null;
+  };
   note: string;
 }
 
 export interface CheckInRecords {
   stats: {
-    [key in CheckInRecord['mode']]: number;
+    [_key in RecordMode]: number;
   };
   data: CheckInRecord[];
   theme: {
-    [key in CheckInRecord['mode']]: string;
+    [_key in RecordMode]: string;
   };
 }
 
@@ -93,10 +96,10 @@ const binarySearch = (data: CheckInRecord[], target: Date) => {
 const init = (state: CheckInState, action: CheckInStateInitAction) => {
   const stats = action.payload.reduce(
     (acc, record) => {
-      acc[record.mode] = acc[record.mode] + 1 || 1;
+      acc[record.record.mode] = acc[record.record.mode] + 1 || 1;
       return acc;
     },
-    {} as Record<CheckInRecord['mode'], number>,
+    {} as Record<RecordMode, number>,
   );
   return {
     ...state,
@@ -107,11 +110,13 @@ const init = (state: CheckInState, action: CheckInStateInitAction) => {
 
 const setRecord = (state: CheckInState, action: CheckInStateSetAction) => {
   const [index, prefix] = binarySearch(state.data, action.payload.date);
-  const originalMode = state.data[index]?.mode;
-  const newMode = action.payload.mode;
+  const originalMode = state.data[index]?.record.mode;
+  const newMode = action.payload.record.mode;
+  const originalCount = state.data[index]?.record.count;
+  const newCount = action.payload.record.count;
   if (index !== -1) {
     // Existing record
-    if (newMode === originalMode) {
+    if (newMode === originalMode && newCount === originalCount) {
       // No change
       return state;
     }
@@ -141,7 +146,7 @@ const setRecord = (state: CheckInState, action: CheckInStateSetAction) => {
     ...state,
     stats: {
       ...state.stats,
-      [action.payload.mode]: state.stats[action.payload.mode] + 1,
+      [newMode]: state.stats[newMode] + 1,
     },
     data: newData,
   };
@@ -165,7 +170,7 @@ const deleteRecord = (
     data: newData,
     stats: {
       ...state.stats,
-      [deletedRecord.mode]: state.stats[deletedRecord.mode] - 1,
+      [deletedRecord.record.mode]: state.stats[deletedRecord.record.mode] - 1,
     },
   };
 };
@@ -193,22 +198,28 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     dispatch({
       type: 'init',
-      payload: Array.from({ length: 365 }, (_, index) => ({
-        date: new Date(Date.UTC(2025, 0, index + 1)),
-        mode:
-          Math.random() < 0.5 ? ('limit' as const) : ('exhaustive' as const),
-        note: [
-          '😅Ut ab tempore velit omnis itaque.',
-          'Blanditiis 🤏 vero blanditiis porro voluptatum ut.',
-          'Placeat iure 🦍 optio.',
-          'Corrupti voluptates placeat 🍠 nesciunt et qui voluptatem architecto nobis quia.',
-          'Qui optio quaerat commodi 🌝 est nisi distinctio eos est mollitia.',
-          'Fugiat nesciunt nostrum. 🎃',
-          'Libero dolores et 🗿 blanditiis quidem repellendus et quas. Placeat consequatur quia ullam consectetur sed tenetur fuga alias. Ut repellendus ducimus. Quam excepturi cumque. Quas provident sint iusto maiores.',
-          'Aut earum 🈳 et aut enim. Ullam nam eaque cumque beatae consequatur excepturi. Sequi hic dolore iusto quibusdam sit. Mollitia itaque quam sint eos voluptas. Dolores incidunt illum fugiat atque voluptatem.',
-          '🇺🇳 Quidem sit magni dicta officiis sed et.\nDeleniti repudiandae quia dolore quia.\nVoluptate id exercitationem.',
-        ][Math.floor(Math.random() * 9)],
-      })).filter(() => Math.random() < 0.5),
+      payload: Array.from({ length: 365 }, (_, index) => {
+        const mode =
+          Math.random() < 0.5 ? ('limit' as const) : ('exhaustive' as const);
+        return {
+          date: new Date(Date.UTC(2025, 0, index + 1)),
+          record: {
+            mode,
+            count: mode === 'exhaustive' ? 1 : null,
+          },
+          note: [
+            '😅Ut ab tempore velit omnis itaque.',
+            'Blanditiis 🤏 vero blanditiis porro voluptatum ut.',
+            'Placeat iure 🦍 optio.',
+            'Corrupti voluptates placeat 🍠 nesciunt et qui voluptatem architecto nobis quia.',
+            'Qui optio quaerat commodi 🌝 est nisi distinctio eos est mollitia.',
+            'Fugiat nesciunt nostrum. 🎃',
+            'Libero dolores et 🗿 blanditiis quidem repellendus et quas. Placeat consequatur quia ullam consectetur sed tenetur fuga alias. Ut repellendus ducimus. Quam excepturi cumque. Quas provident sint iusto maiores.',
+            'Aut earum 🈳 et aut enim. Ullam nam eaque cumque beatae consequatur excepturi. Sequi hic dolore iusto quibusdam sit. Mollitia itaque quam sint eos voluptas. Dolores incidunt illum fugiat atque voluptatem.',
+            '🇺🇳 Quidem sit magni dicta officiis sed et.\nDeleniti repudiandae quia dolore quia.\nVoluptate id exercitationem.',
+          ][Math.floor(Math.random() * 9)],
+        };
+      }).filter(() => Math.random() < 0.5),
     });
   }, []);
   const getBetween = useCallback(
@@ -264,6 +275,6 @@ export function useCheckIn() {
   return context;
 }
 
-export const getModeTheme = (mode: CheckInRecord['mode']) => {
+export const getModeTheme = (mode: RecordMode) => {
   return mode === 'limit' ? '#8AB86E' : '#FF6B6B';
 };
