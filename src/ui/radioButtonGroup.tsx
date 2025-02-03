@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-interface RadioButtonProps<T> {
+export interface RadioButtonProps<T> {
   label: string;
   value: T;
   disabled?: boolean;
@@ -36,6 +36,9 @@ interface RadioGroupProps<T, Opt extends boolean = false> {
   style?: StyleProp<ViewStyle>;
   children: React.ReactNode;
 }
+
+const AnimatedTouchableRipple =
+  Animated.createAnimatedComponent(TouchableRipple);
 
 export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
   const {
@@ -82,17 +85,15 @@ export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
   }, [checked, activeColor, color, animatedBackground]);
 
   return (
-    <TouchableRipple
+    <AnimatedTouchableRipple
       onPress={handlePress}
-      className="grow basis-1"
       disabled={disabled}
+      className={`grow basis-1 flex-row items-center justify-center gap-2 p-2 ${
+        index !== total - 1 ? 'border-r border-neutral-300' : ''
+      }`}
+      style={[style, animatedBackgroundStyle]}
     >
-      <Animated.View
-        className={`flex-row items-center justify-center gap-2 p-2 ${
-          index !== total - 1 ? 'border-r border-neutral-300' : ''
-        }`}
-        style={[style, animatedBackgroundStyle]}
-      >
+      <>
         {iconPosition === 'left' && Icon && <Icon checked={checked} />}
         <Text
           style={[
@@ -107,8 +108,8 @@ export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
           {label}
         </Text>
         {iconPosition === 'right' && Icon && <Icon checked={checked} />}
-      </Animated.View>
-    </TouchableRipple>
+      </>
+    </AnimatedTouchableRipple>
   );
 };
 
