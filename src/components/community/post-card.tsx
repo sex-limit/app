@@ -1,5 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Image,
   type StyleProp,
@@ -191,6 +197,327 @@ const PostCardHeader = ({ user, children }: PostCardHeaderProps) => {
   );
 };
 
+interface PostCardActionPropsBase {
+  id: number;
+}
+
+interface PostFavoriteActionProps extends PostCardActionPropsBase {
+  favoriteCount: number;
+  isLiked: boolean;
+}
+
+const PostFavoriteAction = ({
+  favoriteCount,
+  isLiked,
+}: PostFavoriteActionProps) => {
+  const [favorite, setFavorite] = useState(favoriteCount);
+  const [liked, setLiked] = useState(isLiked);
+
+  useEffect(() => {
+    setFavorite(favoriteCount);
+  }, [favoriteCount, setFavorite]);
+  useEffect(() => {
+    setLiked(isLiked);
+  }, [isLiked, setLiked]);
+
+  return (
+    <View className="flex-row items-center">
+      <Icon
+        name={liked ? 'heart' : 'heart-outline'}
+        size={20}
+        color={liked ? '#F87171' : '#666'}
+        onPress={() => {
+          setLiked(!liked);
+          setFavorite(liked ? favorite - 1 : favorite + 1);
+        }}
+      />
+      <Text className="ml-1 text-gray-600">{favorite}</Text>
+    </View>
+  );
+};
+
+interface PostShareActionProp extends PostCardActionPropsBase {
+  shareCount: number;
+}
+
+const PostShareAction = ({ shareCount }: PostShareActionProp) => {
+  return (
+    <View className="flex-row items-center">
+      <Icon name="share-outline" size={20} color="#666" />
+      <Text className="ml-1 text-gray-600">{shareCount}</Text>
+    </View>
+  );
+};
+
+interface PostCommentActionProps extends PostCardActionPropsBase {
+  commentCount: number;
+  onTriggerComment: (id: number) => void;
+}
+
+const PostCommentAction = ({
+  id,
+  commentCount,
+  onTriggerComment,
+}: PostCommentActionProps) => {
+  return (
+    <TouchableOpacity
+      className="flex-row items-center"
+      onPress={() => onTriggerComment(id)}
+    >
+      <Icon name="comment-outline" size={20} color="#666" />
+      <Text className="ml-1 text-gray-600">{commentCount}</Text>
+    </TouchableOpacity>
+  );
+};
+
+interface PostReactionProps
+  extends PostFavoriteActionProps,
+    PostShareActionProp {
+  commentCount: number;
+}
+
+interface PostCommentsProps {}
+
+function generateMockComments(count: number, withReply = true) {
+  const candidateBody = [
+    '哥们加油💪，你可以',
+    '加油，你也可以的',
+    '你是最棒的',
+    '你的努力我看在眼里',
+    '我相信你一定可以的',
+    '加油，你是最棒的',
+    '你的努力终将会得到回报',
+    '你是最棒的，加油',
+  ];
+  const candidateUserName = ['Alice', 'Bob', 'Charlie', 'David', 'Eve'];
+  const candidateLocation = ['上海', '北京', '杭州', '合肥', '南京'];
+  const comments: IPostCommentListItem[] = [];
+  let replies: IPostCommentReplyItem[] = [];
+  for (let i = 0; i < count; i++) {
+    const favoriteCounts = Math.floor(Math.random() * 10);
+    if (withReply) {
+      let temp = generateMockComments(
+        Math.floor(Math.random() * favoriteCounts),
+        false,
+      );
+      replies = temp.map((reply) => {
+        return {
+          ...reply,
+          replyTo:
+            Math.random() > 0.5
+              ? user
+              : temp[Math.floor(Math.random() * temp.length)].user,
+        };
+      });
+    }
+    const user = {
+      id: i,
+      createAt: new Date(Date.now() - i * 1000).toISOString(),
+      username: candidateUserName[i % candidateUserName.length],
+      avatar: 'https://placekittens.com/40/40',
+      followed: false,
+    };
+    const comment: IPostCommentListItem = {
+      id: i.toString(),
+      createAt: new Date(Date.now() - i * 1000).toISOString(),
+      body: candidateBody[i % candidateBody.length],
+      ip_location: candidateLocation[i % candidateLocation.length],
+      favoriteCounts,
+      user,
+      isLiked: false,
+      repliesCount: 0,
+      replies: replies,
+    };
+    comments.push(comment);
+  }
+  return comments;
+}
+
+// trigger more and fold
+interface PostCommentMoreProps {
+  onTriggerMore: () => void;
+  onFold: () => void;
+  total: number;
+  visibleCount: number;
+  defaultVisibleCount: number;
+}
+
+const PostCommentMore = ({
+  onTriggerMore,
+  onFold,
+  total,
+  visibleCount,
+  defaultVisibleCount,
+}: PostCommentMoreProps) => {
+  return (
+    <View className="mt-2 flex-row items-center justify-start gap-5 pl-10">
+      {visibleCount < total && (
+        <TouchableOpacity
+          onPress={() => onTriggerMore()}
+          className="flex-row items-center justify-center"
+        >
+          <Text className="text-gray-500">
+            展开 {total - visibleCount} 条评论
+          </Text>
+          <MaterialCommunityIcons name="chevron-down" size={16} color="#666" />
+        </TouchableOpacity>
+      )}
+      {visibleCount > defaultVisibleCount && (
+        <TouchableOpacity
+          onPress={() => onFold()}
+          className="flex-row items-center justify-center"
+        >
+          <Text className="text-gray-500">收起</Text>
+          <MaterialCommunityIcons name="chevron-up" size={16} color="#666" />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
+type PostCommentItemProps =
+  | {
+      type: 'comment';
+      comment: IPostCommentListItem;
+    }
+  | {
+      type: 'reply';
+      comment: IPostCommentReplyItem;
+    };
+
+const PostCommentItem = ({ type, comment }: PostCommentItemProps) => {
+  const defaultVisibleCount = 2;
+  const [visibleCount, setVisibleCount] = useState(defaultVisibleCount);
+
+  return (
+    <View>
+      <View className="mb-2 flex-row">
+        <Image
+          source={{ uri: comment.user.avatar }}
+          className="h-8 w-8 rounded-full"
+        />
+        <View className="ml-2 flex-1">
+          <Text className="font-medium">{comment.user.username}</Text>
+          <Text className="text-gray-600">{comment.body}</Text>
+          <View className="mt-1 flex-row">
+            <Text className="text-gray-400">{comment.favoriteCounts}</Text>
+            <Text className="mx-2 text-gray-400">·</Text>
+            <TouchableOpacity>
+              <Text className="text-gray-400">回复</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      {type === 'comment' && (
+        <View className="ml-10">
+          {comment.replies.length > 0 &&
+            comment.replies.map(
+              (reply, index) =>
+                index < visibleCount && (
+                  <PostCommentItem key={index} type="reply" comment={reply} />
+                ),
+            )}
+          <PostCommentMore
+            total={comment.replies.length}
+            visibleCount={visibleCount}
+            defaultVisibleCount={defaultVisibleCount}
+            onTriggerMore={() => setVisibleCount((prev) => prev + 4)}
+            onFold={() => setVisibleCount(defaultVisibleCount)}
+          />
+        </View>
+      )}
+    </View>
+  );
+};
+
+const PostComments = () => {
+  const commentsData = useMemo(() => generateMockComments(10), []);
+  const defaultVisibleCount = 2;
+  const [visibleCount, setVisibleCount] = useState(defaultVisibleCount);
+  return (
+    <View style={{ paddingBottom: 40 }}>
+      <View>
+        {commentsData.map(
+          (comment, index) =>
+            visibleCount > index && (
+              <PostCommentItem key={index} type="comment" comment={comment} />
+            ),
+        )}
+      </View>
+      <PostCommentMore
+        total={commentsData.length}
+        visibleCount={visibleCount}
+        defaultVisibleCount={defaultVisibleCount}
+        onTriggerMore={() => setVisibleCount((prev) => prev + 4)}
+        onFold={() => setVisibleCount(defaultVisibleCount)}
+      />
+    </View>
+  );
+};
+
+const PostReaction = ({
+  id,
+  favoriteCount,
+  isLiked,
+  commentCount,
+  shareCount,
+}: PostReactionProps) => {
+  const [commentVisible, setCommentVisible] = useState(false);
+  return (
+    <>
+      <View className="mb-2 flex-row justify-around border-t border-gray-100 pt-3">
+        <View className="flex-1 basis-1 items-center">
+          <PostFavoriteAction
+            id={id}
+            favoriteCount={favoriteCount}
+            isLiked={isLiked}
+          />
+        </View>
+        <View className="flex-1 basis-1 items-center">
+          <PostCommentAction
+            id={id}
+            commentCount={commentCount}
+            onTriggerComment={() => {}}
+          />
+        </View>
+        <View className="flex-1 basis-1 items-center">
+          <PostShareAction id={id} shareCount={shareCount} />
+        </View>
+      </View>
+      <View className="border-t border-gray-100 px-4 py-3">
+        <View className="mb-2 flex-row items-center justify-between">
+          <Text className=" text-gray-500">共 {commentCount} 条评论</Text>
+          <TouchableOpacity
+            onPress={() => setCommentVisible(!commentVisible)}
+            className="ml-2 flex-row items-center"
+          >
+            {commentVisible ? (
+              <>
+                <Text className="text-gray-500">收起</Text>
+                <MaterialCommunityIcons
+                  name="chevron-up"
+                  size={16}
+                  color="#666"
+                />
+              </>
+            ) : (
+              <>
+                <Text className="text-gray-500">展开</Text>
+                <MaterialCommunityIcons
+                  name="chevron-down"
+                  size={16}
+                  color="#666"
+                />
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+        {commentVisible && <PostComments />}
+      </View>
+    </>
+  );
+};
+
 export const PostCard = () => {
   const postData: IPost = {
     id: 1,
@@ -219,7 +546,7 @@ export const PostCard = () => {
   };
 
   return (
-    <View className="mb-2 bg-white">
+    <View className=" bg-white">
       <View className="p-4">
         <PostCardHeader user={postData.user}>
           <PostCardAvatar user={postData.user} updateAt={postData.updateAt} />
@@ -227,7 +554,7 @@ export const PostCard = () => {
         <Text className="mb-3 text-lg">{postData.title}</Text>
         <Text className="mb-3 text-gray-600">{postData.body}</Text>
 
-        <View className="mb-3 flex-row">
+        <View className="mb-3 flex-row gap-3">
           {postData.imgs.map((img, index) => (
             <Image
               key={index}
@@ -241,49 +568,15 @@ export const PostCard = () => {
           <Icon name="map-marker-outline" size={16} color="#666" />
           <Text className="ml-1 text-gray-600">{postData.ip_location}</Text>
         </View>
-
-        <View className="flex-row justify-around border-t border-gray-100 pt-3">
-          <View className="flex-row items-center">
-            <Icon name="heart-outline" size={20} color="#666" />
-            <Text className="ml-1 text-gray-600">
-              {postData.favoriteCounts}
-            </Text>
-          </View>
-          <View className="flex-row items-center">
-            <Icon name="comment-outline" size={20} color="#666" />
-            <Text className="ml-1 text-gray-600">{postData.commentCounts}</Text>
-          </View>
-          <View className="flex-row items-center">
-            <Icon name="share-outline" size={20} color="#666" />
-            <Text className="ml-1 text-gray-600">{postData.shareCounts}</Text>
-          </View>
-        </View>
       </View>
 
-      <View className="border-t border-gray-100 px-4 py-3">
-        <Text className="text-gray-500">
-          共 {postData.commentCounts} 条评论
-        </Text>
-        <View className="mt-2">
-          <View className="mb-2 flex-row">
-            <Image
-              source={{ uri: 'https://placekittens.com/40/40' }}
-              className="h-8 w-8 rounded-full"
-            />
-            <View className="ml-2 flex-1">
-              <Text className="font-medium">海阔天空</Text>
-              <Text className="text-gray-600">哥们加油💪，你可以</Text>
-              <View className="mt-1 flex-row">
-                <Text className="text-gray-400">1</Text>
-                <Text className="mx-2 text-gray-400">·</Text>
-                <TouchableOpacity>
-                  <Text className="text-gray-400">回复</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </View>
+      <PostReaction
+        id={postData.id}
+        favoriteCount={postData.favoriteCounts}
+        isLiked={postData.isLiked}
+        commentCount={postData.commentCounts}
+        shareCount={postData.shareCounts}
+      />
     </View>
   );
 };

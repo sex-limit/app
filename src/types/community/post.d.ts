@@ -28,7 +28,7 @@ interface Tag {
   body: string;
 }
 
-declare interface IHoleCommentListItem {
+declare interface IPostCommentListItem {
   id: string;
   createAt: string;
   body: string;
@@ -37,4 +37,16 @@ declare interface IHoleCommentListItem {
   user: User;
   isLiked: boolean;
   repliesCount: number;
+  replies: IPostCommentReplyItem[];
+}
+
+declare interface IPostCommentReplyItem {
+  id: string;
+  createAt: string;
+  body: string;
+  ip_location: string;
+  favoriteCounts: number;
+  user: User;
+  isLiked: boolean;
+  replyTo: User;
 }
