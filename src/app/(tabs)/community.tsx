@@ -14,16 +14,18 @@ import {
 import { SceneMap, TabView } from 'react-native-tab-view';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import { PostCard } from '@/components/community/post-card';
+
 const PlanCard = () => (
   <TouchableOpacity className="mx-4 mb-3 overflow-hidden rounded-xl bg-white">
     <View className="relative">
       <Image
-        source={{ uri: 'https://placekitten.com/400/200' }}
+        source={{ uri: 'https://placekittens.com/400/200' }}
         className="h-[200px] w-full"
       />
       <View className="absolute left-3 top-3 flex-row items-center">
         <Image
-          source={{ uri: 'https://placekitten.com/40/40' }}
+          source={{ uri: 'https://placekittens.com/40/40' }}
           className="h-8 w-8 rounded-full border-2 border-white"
         />
         <View className="ml-2 rounded-full bg-black/50 px-2 py-1">
@@ -54,96 +56,6 @@ const PlanCard = () => (
       </View>
     </View>
   </TouchableOpacity>
-);
-
-const PostCard = () => (
-  <View className="mb-2 bg-white">
-    <View className="p-4">
-      <View className="mb-3 flex-row items-center justify-between">
-        <View className="flex-row items-center">
-          <Image
-            source={{ uri: 'https://placekitten.com/50/50' }}
-            className="h-10 w-10 rounded-full"
-          />
-          <View className="ml-3">
-            <Text className="font-medium">自己吓自己</Text>
-            <Text className="text-gray-500">2天前</Text>
-          </View>
-        </View>
-        <View className="flex-row items-center">
-          <TouchableOpacity className="rounded-full bg-gray-900 px-4 py-1.5">
-            <Text className="text-white">+ 关注</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="ml-2 p-2">
-            <Icon name="dots-horizontal" size={20} color="#666" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <Text className="mb-3 text-lg">美好的一天,从拥抱阳光开始</Text>
-      <Text className="mb-3 text-gray-600">
-        每一天都是一个全新的开始，深呼吸，从头再来。
-      </Text>
-
-      <View className="mb-3 flex-row">
-        <Image
-          source={{ uri: 'https://placekitten.com/150/150' }}
-          className="h-24 w-24 rounded-lg"
-        />
-        <Image
-          source={{ uri: 'https://placekitten.com/151/150' }}
-          className="mx-2 h-24 w-24 rounded-lg"
-        />
-        <Image
-          source={{ uri: 'https://placekitten.com/152/150' }}
-          className="h-24 w-24 rounded-lg"
-        />
-      </View>
-
-      <View className="mb-3 flex-row items-center">
-        <Icon name="map-marker-outline" size={16} color="#666" />
-        <Text className="ml-1 text-gray-600">上海市闵行区·上海交通大学</Text>
-      </View>
-
-      <View className="flex-row justify-between border-t border-gray-100 pt-3">
-        <View className="flex-row items-center">
-          <Icon name="heart-outline" size={20} color="#666" />
-          <Text className="ml-1 text-gray-600">99</Text>
-        </View>
-        <View className="flex-row items-center">
-          <Icon name="comment-outline" size={20} color="#666" />
-          <Text className="ml-1 text-gray-600">100</Text>
-        </View>
-        <View className="flex-row items-center">
-          <Icon name="share-outline" size={20} color="#666" />
-          <Text className="ml-1 text-gray-600">100</Text>
-        </View>
-      </View>
-    </View>
-
-    <View className="border-t border-gray-100 px-4 py-3">
-      <Text className="text-gray-500">共173条评论</Text>
-      <View className="mt-2">
-        <View className="mb-2 flex-row">
-          <Image
-            source={{ uri: 'https://placekitten.com/40/40' }}
-            className="h-8 w-8 rounded-full"
-          />
-          <View className="ml-2 flex-1">
-            <Text className="font-medium">海阔天空</Text>
-            <Text className="text-gray-600">哥们加油💪，你可以</Text>
-            <View className="mt-1 flex-row">
-              <Text className="text-gray-400">1</Text>
-              <Text className="mx-2 text-gray-400">·</Text>
-              <TouchableOpacity>
-                <Text className="text-gray-400">回复</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </View>
-    </View>
-  </View>
 );
 
 const PostsRoute = () => (
