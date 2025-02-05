@@ -1,7 +1,14 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  BottomSheetModal,
+  BottomSheetTextInput,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 import React, {
+  forwardRef,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
@@ -270,14 +277,6 @@ const PostCommentAction = ({
   );
 };
 
-interface PostReactionProps
-  extends PostFavoriteActionProps,
-    PostShareActionProp {
-  commentCount: number;
-}
-
-interface PostCommentsProps {}
-
 function generateMockComments(count: number, withReply = true) {
   const candidateBody = [
     '哥们加油💪，你可以',
@@ -455,14 +454,148 @@ const PostComments = () => {
   );
 };
 
+interface PostReplyBottomSheetMethods {
+  open: (
+    type: 'comment' | 'reply',
+    id: string,
+    replyTo?: User,
+    refContent?: string,
+  ) => void;
+  close: () => void;
+}
+
+interface PostReplyBottomSheetProps {
+  onSend: (type: 'comment' | 'reply', id: string, content: string) => void;
+}
+
+const PostReplyBottomSheet = forwardRef<
+  PostReplyBottomSheetMethods,
+  PostReplyBottomSheetProps
+>(({ onSend }, ref) => {
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+  const [type, setType] = useState<'comment' | 'reply'>('comment');
+  const [id, setId] = useState('');
+  const [replyTo, setReplyTo] = useState<User | undefined>();
+  const [refContent, setRefContent] = useState<string>();
+  const [content, setContent] = useState('');
+
+  const open = useCallback(
+    (
+      type: 'comment' | 'reply',
+      id: string,
+      replyTo?: User,
+      refContent?: string,
+      // eslint-disable-next-line max-params
+    ) => {
+      console.log('open', type, id, replyTo, refContent);
+      setType(type);
+      setId(id);
+      setReplyTo(replyTo);
+      setRefContent(
+        refContent ||
+          'Blanditiis inventore labore eveniet quia corrupti ex voluptatem omnis.',
+      );
+      setContent('');
+      bottomSheetModalRef.current?.present();
+    },
+    [],
+  );
+
+  const close = useCallback(() => {
+    bottomSheetModalRef.current?.dismiss();
+  }, []);
+
+  useImperativeHandle(ref, () => ({
+    open,
+    close,
+  }));
+
+  const onSendComment = useCallback(() => {
+    onSend(type, id, content);
+    bottomSheetModalRef.current?.dismiss();
+  }, [content, id, onSend, type]);
+
+  return (
+    <BottomSheetModal
+      index={0}
+      ref={bottomSheetModalRef}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      enableDynamicSizing={true}
+      handleComponent={() => (
+        <View className="flex-row items-center justify-between gap-2 rounded-t-2xl bg-neutral-200 px-4 ">
+          <View className="flex-1 flex-row items-center justify-start py-2">
+            <Text className="text-neutral-500">回复 </Text>
+            {replyTo && (
+              <>
+                <Text className="text-neutral-500">@</Text>
+                <Text className="text-neutral-500">{replyTo?.username}</Text>
+              </>
+            )}
+            {refContent && (
+              <Text
+                className="flex-1 overflow-hidden text-neutral-500"
+                numberOfLines={1}
+              >
+                : {refContent}
+              </Text>
+            )}
+          </View>
+          <TouchableOpacity onPress={close} className="p-2">
+            <MaterialCommunityIcons name="close" size={16} color="#666" />
+          </TouchableOpacity>
+        </View>
+      )}
+    >
+      <BottomSheetView className="p-4">
+        <View>
+          <BottomSheetTextInput
+            value={content}
+            onChangeText={setContent}
+            placeholder="发一条友善的评论吧 ~"
+            multiline
+            numberOfLines={5}
+            textAlignVertical="top"
+            style={{
+              lineHeight: 20,
+              height: 100 + 20,
+              padding: 10,
+            }}
+            className="rounded-lg bg-[#EBEBEB]"
+          />
+          <TouchableOpacity
+            onPress={onSendComment}
+            className="mt-2 h-10 flex-row items-center justify-center rounded-lg bg-[#84AB62]"
+          >
+            <Text className="text-white">发送</Text>
+          </TouchableOpacity>
+        </View>
+      </BottomSheetView>
+    </BottomSheetModal>
+  );
+});
+
+interface PostReactionProps
+  extends PostFavoriteActionProps,
+    PostShareActionProp {
+  author: User;
+  commentCount: number;
+}
+
 const PostReaction = ({
   id,
   favoriteCount,
   isLiked,
   commentCount,
   shareCount,
+  author,
 }: PostReactionProps) => {
-  const [commentVisible, setCommentVisible] = useState(false);
+  const [commentVisible, setCommentVisible] = useState(true);
+  const postReplyBottomSheetRef = useRef<PostReplyBottomSheetMethods>(null);
+  const handleTriggerComment = () => {
+    postReplyBottomSheetRef.current?.open('comment', id.toString(), author);
+  };
   return (
     <>
       <View className="mb-2 flex-row justify-around border-t border-gray-100 pt-3">
@@ -477,7 +610,7 @@ const PostReaction = ({
           <PostCommentAction
             id={id}
             commentCount={commentCount}
-            onTriggerComment={() => {}}
+            onTriggerComment={handleTriggerComment}
           />
         </View>
         <View className="flex-1 basis-1 items-center">
@@ -514,6 +647,10 @@ const PostReaction = ({
         </View>
         {commentVisible && <PostComments />}
       </View>
+      <PostReplyBottomSheet
+        onSend={(...args) => console.log(args)}
+        ref={postReplyBottomSheetRef}
+      />
     </>
   );
 };
@@ -576,6 +713,7 @@ export const PostCard = () => {
         isLiked={postData.isLiked}
         commentCount={postData.commentCounts}
         shareCount={postData.shareCounts}
+        author={postData.user}
       />
     </View>
   );
