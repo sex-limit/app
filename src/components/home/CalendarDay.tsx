@@ -35,7 +35,7 @@ const CalendarDay = memo(
     }, [record, onToggleDay, day, scaleAnim, progressAnim]);
 
     const animatedThemeColor = useSharedValue(
-      record ? getModeTheme(record?.mode) : '#f5f5f5',
+      record ? getModeTheme(record?.record.mode) : '#f5f5f5',
     );
 
     // const animatedProgressBgStyle = useAnimatedStyle(() => {
@@ -63,7 +63,7 @@ const CalendarDay = memo(
     //   };
     // });
     const animatedTextColor = useSharedValue(
-      record ? getModeTheme(record?.mode) : '#333333',
+      record ? getModeTheme(record?.record.mode) : '#333333',
     );
     const animatedThemeColorStyle = useAnimatedStyle(() => ({
       borderColor: animatedThemeColor.value,
@@ -74,11 +74,11 @@ const CalendarDay = memo(
 
     useEffect(() => {
       animatedThemeColor.value = withTiming(
-        record ? getModeTheme(record?.mode) : '#f5f5f5',
+        record ? getModeTheme(record?.record.mode) : '#f5f5f5',
         { duration: 200 },
       );
       animatedTextColor.value = withTiming(
-        record ? getModeTheme(record?.mode) : '#333333',
+        record ? getModeTheme(record?.record.mode) : '#333333',
         { duration: 50 },
       );
     }, [record, animatedThemeColor, animatedTextColor]);
