@@ -5,14 +5,12 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Keyboard,
-  type LayoutChangeEvent,
   type NativeSyntheticEvent,
   Text,
   type TextInput as NTextInput,
@@ -30,7 +28,6 @@ import Animated, {
 import { type CheckInRecord } from '@/contexts/CheckInContext';
 import { Input } from '@/ui';
 import { EmojiPicker } from '@/ui/emojiPicker';
-import { RadioButton, RadioButtonGroup } from '@/ui/radioButtonGroup';
 
 export type NoteData = {
   note: string;
@@ -108,31 +105,7 @@ const QuickNotes = forwardRef(
     }));
 
     const [emojiPickerExpanded, setEmojiPickerExpanded] = useState(false);
-
-    const [bottomSheetHeight, setBottomSheetHeight] = useState<number | null>(
-      null,
-    );
     const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-    const handleBottomSheetLayout = useCallback(
-      (event: LayoutChangeEvent) => {
-        if (bottomSheetHeight === null) {
-          setBottomSheetHeight(
-            Math.ceil(event.nativeEvent.layout.height) - 240,
-          );
-        }
-      },
-      [bottomSheetHeight],
-    );
-
-    const snapPoints = useMemo(() => {
-      const emojiPickerHeight = emojiPickerExpanded ? 240 : 0;
-      return [
-        (bottomSheetHeight ?? 300) +
-          Math.max(emojiPickerHeight, keyboardHeight) +
-          40,
-      ];
-    }, [bottomSheetHeight, emojiPickerExpanded, keyboardHeight]);
 
     const handleEmojiPickerToggle = useCallback((expanded: boolean) => {
       if (expanded) {
@@ -219,90 +192,84 @@ const QuickNotes = forwardRef(
         />
         <BottomSheetModal
           index={0}
-          onChange={handleBottomSheetChange}
           ref={bottomSheetRef}
-          snapPoints={snapPoints}
           keyboardBehavior="extend"
           keyboardBlurBehavior="restore"
           enableContentPanningGesture={false}
           enableHandlePanningGesture={true}
           enableOverDrag={true}
+          enableDynamicSizing={true}
+          backgroundStyle={{
+            backgroundColor: '#fff',
+            borderRadius: 20,
+          }}
         >
-          <BottomSheetView className=" p-4" onLayout={handleBottomSheetLayout}>
+          <BottomSheetView className="px-5 pt-4">
             {/* Header */}
-            <View className="flex-row items-center justify-between">
+            <View className="mb-6 flex-row items-center justify-between">
               <TouchableOpacity
                 onPress={handleClose}
-                className="flex-row items-center"
+                className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F5F5]"
               >
-                <MaterialCommunityIcons name="close" size={24} color="#333" />
-                {/* <Text>取消</Text> */}
+                <MaterialCommunityIcons name="close" size={20} color="#333" />
               </TouchableOpacity>
-              <View className="flex-col items-center">
-                <Text className="text-xl font-bold">打卡</Text>
-                <Text className="text-sm text-neutral-500">
-                  {currentDate.toLocaleDateString()}
-                </Text>
+
+              <View className="items-center">
+                <Text className="text-lg font-semibold text-[#333]">小记</Text>
+                <Text className="text-xs text-[#666]">hijack</Text>
               </View>
+
               <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
-                className="flex-row items-center"
+                className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F5F5]"
               >
-                <MaterialCommunityIcons name="check" size={24} color="#333" />
-                {/* <Text>确认</Text> */}
+                <MaterialCommunityIcons name="check" size={20} color="#333" />
               </TouchableOpacity>
             </View>
 
-            <View></View>
-            {/* Main */}
-            <View className="mt-4">
-              <Controller
-                control={control}
-                name="mode"
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    {/* <View className="flex-row items-center justify-between">
-                      <Text className="mb-2  font-light text-neutral-100">
-                        今天的状态
-                      </Text>
-                    </View> */}
-                    <RadioButtonGroup
-                      value={value}
-                      onChange={(v) => onChange(v)}
-                      direction="horizontal"
-                      optional={true}
-                    >
-                      <RadioButton
-                        icon={({ checked }) => (
-                          <MaterialCommunityIcons
-                            name="leaf"
-                            size={18}
-                            color={checked ? '#ffffff' : '#84AB62'}
-                          />
-                        )}
-                        label="戒"
-                        value="limit"
-                        activeColor="#84AB62"
-                        activeTextColor="#ffffff"
-                      />
+            {/* Main Content */}
+            <View>
+              <View className="mb-6 flex-row items-center justify-between">
+                <Controller
+                  control={control}
+                  name="mode"
+                  render={({ field: { onChange, value } }) => (
+                    <View className="flex-row gap-2">
+                      <TouchableOpacity
+                        onPress={() => onChange('limit')}
+                        className={`h-9 flex-1 items-center justify-center rounded-lg ${
+                          value === 'limit' ? 'bg-[#84AB62]' : 'bg-[#F5F5F5]'
+                        }`}
+                      >
+                        <Text
+                          className={`text-sm font-medium ${
+                            value === 'limit' ? 'text-white' : 'text-[#666]'
+                          }`}
+                        >
+                          戒🦌
+                        </Text>
+                      </TouchableOpacity>
 
-                      <RadioButton
-                        icon={({ checked }) => (
-                          <MaterialCommunityIcons
-                            name="fire"
-                            size={20}
-                            color={checked ? '#ffffff' : '#CD6464'}
-                          />
-                        )}
-                        label="鹿"
-                        value="exhaustive"
-                        activeColor="#CD6464"
-                        activeTextColor="#ffffff"
-                      />
-                    </RadioButtonGroup>
-                  </>
-                )}
-              />
+                      <TouchableOpacity
+                        onPress={() => onChange('relapse')}
+                        className={`h-9 flex-1 items-center justify-center rounded-lg ${
+                          value === 'relapse' ? 'bg-[#84AB62]' : 'bg-[#F5F5F5]'
+                        }`}
+                      >
+                        <Text
+                          className={`text-sm font-medium ${
+                            value === 'relapse' ? 'text-white' : 'text-[#666]'
+                          }`}
+                        >
+                          开🦌
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                />
+              </View>
+
+              {/* Note Input */}
               <Controller
                 control={control}
                 name="note"
@@ -316,31 +283,43 @@ const QuickNotes = forwardRef(
                     numberOfLines={8}
                     ref={inputRef}
                     textAlignVertical="top"
-                    placeholder="写一段感想吧..."
-                    style={{
-                      marginTop: 8,
-                      marginBottom: 10,
-                      borderRadius: 10,
-                      fontSize: 16,
-                      lineHeight: 20,
-                      height: 160 + 16,
-                      padding: 8,
-                      color: '#333',
-                      backgroundColor: '#EBEBEB',
-                    }}
+                    placeholder="写下你的心得感受..."
+                    placeholderTextColor="#999"
+                    className="min-h-[160px] rounded-xl bg-[#F5F5F5] p-3 text-base leading-6 text-[#333]"
                   />
                 )}
               />
-            </View>
 
-            {/* Footer */}
-            <View>
-              <EmojiPicker
-                isExpanded={emojiPickerExpanded}
-                onToggleExpand={handleEmojiPickerToggle}
-                ActionBarLeft={ImageUpload}
-                onEmojiSelected={handleSelectEmoji}
-              />
+              {/* Time Display */}
+              <View className="mt-3 flex-row items-center">
+                <Text className="text-sm text-[#333]">
+                  {currentDate
+                    .toLocaleString('zh-CN', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    })
+                    .replace(/\//g, '/')}
+                </Text>
+              </View>
+
+              {/* Emoji Picker */}
+              <View className="mt-3">
+                <EmojiPicker
+                  isExpanded={emojiPickerExpanded}
+                  onToggleExpand={handleEmojiPickerToggle}
+                  ActionBarLeft={ImageUpload}
+                  onEmojiSelected={handleSelectEmoji}
+                  emojiSize={24}
+                  style={{
+                    backgroundColor: '#F5F5F5',
+                    borderRadius: 12,
+                    padding: 8,
+                  }}
+                />
+              </View>
             </View>
           </BottomSheetView>
         </BottomSheetModal>
@@ -353,7 +332,12 @@ const QuickNotes = forwardRef(
   QuickNotesMethods;
 
 const ImageUpload = () => {
-  return <Text className="flex-1">Todo: image uploader</Text>;
+  return (
+    <TouchableOpacity className="flex-1 flex-row items-center gap-2">
+      <MaterialCommunityIcons name="image-plus" size={20} color="#666" />
+      <Text className="text-sm text-[#666]">添加图片</Text>
+    </TouchableOpacity>
+  );
 };
 
 export { QuickNotes };
