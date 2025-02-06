@@ -20,7 +20,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { TouchableRipple } from 'react-native-paper';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -72,9 +71,9 @@ export const NumericRadioButton = <T,>({
   }
 
   return (
-    <View className="grow basis-10 flex-row items-stretch justify-between">
+    <View className="grow basis-1 flex-row items-stretch justify-between">
       <RadioButton {...props} label={label} onChange={onPlus} />
-      <TouchableRipple
+      <TouchableOpacity
         onPress={onMinus}
         className="absolute left-0 h-full w-10 items-center justify-center border-r border-neutral-300/30 p-2"
       >
@@ -83,8 +82,8 @@ export const NumericRadioButton = <T,>({
           size={18}
           color={props.activeTextColor}
         />
-      </TouchableRipple>
-      <TouchableRipple
+      </TouchableOpacity>
+      <TouchableOpacity
         onPress={onPlus}
         className="absolute right-0 h-full w-10 items-center justify-center border-l border-neutral-300/30 p-2"
       >
@@ -93,7 +92,7 @@ export const NumericRadioButton = <T,>({
           size={18}
           color={props.activeTextColor}
         />
-      </TouchableRipple>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -183,11 +182,10 @@ const QuickNotes = forwardRef(
     }));
 
     const [emojiPickerExpanded, setEmojiPickerExpanded] = useState(false);
-
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [bottomSheetHeight, setBottomSheetHeight] = useState<number | null>(
       null,
     );
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const handleBottomSheetLayout = useCallback(
       (event: LayoutChangeEvent) => {
@@ -294,7 +292,6 @@ const QuickNotes = forwardRef(
         />
         <BottomSheetModal
           index={0}
-          onChange={handleBottomSheetChange}
           ref={bottomSheetRef}
           snapPoints={snapPoints}
           keyboardBehavior="extend"
@@ -302,29 +299,36 @@ const QuickNotes = forwardRef(
           enableContentPanningGesture={false}
           enableHandlePanningGesture={true}
           enableOverDrag={true}
+          enableDynamicSizing={false}
+          onChange={handleBottomSheetChange}
+          backgroundStyle={{
+            backgroundColor: '#fff',
+            borderRadius: 20,
+          }}
         >
-          <BottomSheetView className=" p-4" onLayout={handleBottomSheetLayout}>
+          <BottomSheetView
+            className="px-5 pt-4"
+            onLayout={handleBottomSheetLayout}
+          >
             {/* Header */}
-            <View className="flex-row items-center justify-between">
+            <View className="mb-6 flex-row items-center justify-between">
               <TouchableOpacity
                 onPress={handleClose}
-                className="flex-row items-center"
+                className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F5F5]"
               >
-                <MaterialCommunityIcons name="close" size={24} color="#333" />
-                {/* <Text>取消</Text> */}
+                <MaterialCommunityIcons name="close" size={20} color="#333" />
               </TouchableOpacity>
-              <View className="flex-col items-center">
-                <Text className="text-xl font-bold">打卡</Text>
-                <Text className="text-sm text-neutral-500">
-                  {currentDate.toLocaleDateString()}
-                </Text>
+
+              <View className="items-center">
+                <Text className="text-lg font-semibold text-[#333]">小记</Text>
+                <Text className="text-xs text-[#666]">hijack</Text>
               </View>
+
               <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
-                className="flex-row items-center"
+                className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F5F5]"
               >
-                <MaterialCommunityIcons name="check" size={24} color="#333" />
-                {/* <Text>确认</Text> */}
+                <MaterialCommunityIcons name="check" size={20} color="#333" />
               </TouchableOpacity>
             </View>
 
@@ -336,11 +340,6 @@ const QuickNotes = forwardRef(
                 name="record"
                 render={({ field: { onChange, value } }) => (
                   <>
-                    {/* <View className="flex-row items-center justify-between">
-                      <Text className="mb-2  font-light text-neutral-100">
-                        今天的状态
-                      </Text>
-                    </View> */}
                     <RadioButtonGroup
                       value={value?.mode ?? null}
                       onChange={(v) => onChange({ mode: v, count: 1 })}
@@ -348,34 +347,22 @@ const QuickNotes = forwardRef(
                       optional={true}
                     >
                       <RadioButton
-                        icon={({ checked }) => (
-                          <MaterialCommunityIcons
-                            name="leaf"
-                            size={18}
-                            color={checked ? '#ffffff' : '#84AB62'}
-                          />
-                        )}
-                        label="戒"
+                        label="戒🦌"
                         value="limit"
                         activeColor="#84AB62"
                         activeTextColor="#ffffff"
+                        color="#F5F5F5"
                       />
                       <NumericRadioButton
-                        icon={({ checked }) => (
-                          <MaterialCommunityIcons
-                            name="fire"
-                            size={20}
-                            color={checked ? '#ffffff' : '#CD6464'}
-                          />
-                        )}
-                        label="鹿"
+                        label="开🦌"
                         count={value?.count ?? 0}
                         onCountChange={(v, c) =>
                           onChange({ mode: v, count: c })
                         }
                         value="exhaustive"
-                        activeColor="#CD6464"
+                        activeColor="#84AB62"
                         activeTextColor="#ffffff"
+                        color="#F5F5F5"
                       />
                     </RadioButtonGroup>
                   </>
@@ -394,31 +381,43 @@ const QuickNotes = forwardRef(
                     numberOfLines={8}
                     ref={inputRef}
                     textAlignVertical="top"
-                    placeholder="写一段感想吧..."
-                    style={{
-                      marginTop: 8,
-                      marginBottom: 10,
-                      borderRadius: 10,
-                      fontSize: 16,
-                      lineHeight: 20,
-                      height: 160 + 16,
-                      padding: 8,
-                      color: '#333',
-                      backgroundColor: '#EBEBEB',
-                    }}
+                    placeholder="写下你的心得感受..."
+                    placeholderTextColor="#999"
+                    className="min-h-[160px] rounded-xl bg-[#F5F5F5] p-3 text-base leading-6 text-[#333]"
                   />
                 )}
               />
-            </View>
 
-            {/* Footer */}
-            <View>
-              <EmojiPicker
-                isExpanded={emojiPickerExpanded}
-                onToggleExpand={handleEmojiPickerToggle}
-                ActionBarLeft={ImageUpload}
-                onEmojiSelected={handleSelectEmoji}
-              />
+              {/* Time Display */}
+              <View className="mt-3 flex-row items-center">
+                <Text className="text-sm text-[#333]">
+                  {currentDate
+                    .toLocaleString('zh-CN', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    })
+                    .replace(/\//g, '/')}
+                </Text>
+              </View>
+
+              {/* Emoji Picker */}
+              <View className="mt-3">
+                <EmojiPicker
+                  isExpanded={emojiPickerExpanded}
+                  onToggleExpand={handleEmojiPickerToggle}
+                  ActionBarLeft={ImageUpload}
+                  onEmojiSelected={handleSelectEmoji}
+                  emojiSize={24}
+                  style={{
+                    backgroundColor: '#F5F5F5',
+                    borderRadius: 12,
+                    padding: 8,
+                  }}
+                />
+              </View>
             </View>
           </BottomSheetView>
         </BottomSheetModal>
@@ -431,7 +430,12 @@ const QuickNotes = forwardRef(
   QuickNotesMethods;
 
 const ImageUpload = () => {
-  return <Text className="flex-1">Todo: image uploader</Text>;
+  return (
+    <TouchableOpacity className="flex-1 flex-row items-center gap-2">
+      <MaterialCommunityIcons name="image-plus" size={20} color="#666" />
+      <Text className="text-sm text-[#666]">添加图片</Text>
+    </TouchableOpacity>
+  );
 };
 
 export { QuickNotes };

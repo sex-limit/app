@@ -1,12 +1,6 @@
-import React, { useCallback, useEffect } from 'react';
-import { Text, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
-import { TouchableRipple } from 'react-native-paper';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
 
 export interface RadioButtonProps<T> {
   label: string;
@@ -37,9 +31,6 @@ interface RadioGroupProps<T, Opt extends boolean = false> {
   children: React.ReactNode;
 }
 
-const AnimatedTouchableRipple =
-  Animated.createAnimatedComponent(TouchableRipple);
-
 export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
   const {
     label,
@@ -56,9 +47,7 @@ export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
     iconPosition = 'left',
     labelStyle,
     labelLines,
-    index = 0,
-    total = 0,
-  } = props as RadioButtonProps<T> & { index?: number; total?: number };
+  } = props as RadioButtonProps<T>;
 
   const handlePress = () => {
     if (!disabled && onChange) {
@@ -69,33 +58,22 @@ export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
     }
   };
 
-  const animatedBackground = useSharedValue(color);
-  const animatedBackgroundStyle = useAnimatedStyle(() => {
-    return {
-      backgroundColor: animatedBackground.value,
-    };
-  });
-
-  useEffect(() => {
-    if (checked) {
-      animatedBackground.value = withTiming(activeColor, { duration: 200 });
-    } else {
-      animatedBackground.value = withTiming(color, { duration: 200 });
-    }
-  }, [checked, activeColor, color, animatedBackground]);
-
   return (
-    <AnimatedTouchableRipple
+    <TouchableOpacity
       onPress={handlePress}
       disabled={disabled}
-      className={`grow basis-1 flex-row items-center justify-center gap-2 p-2 ${
-        index !== total - 1 ? 'border-r border-neutral-300' : ''
-      }`}
-      style={[style, animatedBackgroundStyle]}
+      className={`h-9 flex-1 grow basis-1 flex-row items-center justify-center gap-2 rounded-lg  p-2`}
+      style={[
+        style,
+        {
+          backgroundColor: checked ? activeColor : color,
+        },
+      ]}
     >
       <>
         {iconPosition === 'left' && Icon && <Icon checked={checked} />}
         <Text
+          className={`text-sm font-medium text-[#666]`}
           style={[
             labelStyle,
             checked &&
@@ -109,7 +87,7 @@ export const RadioButton = <T,>(props: RadioButtonProps<T>) => {
         </Text>
         {iconPosition === 'right' && Icon && <Icon checked={checked} />}
       </>
-    </AnimatedTouchableRipple>
+    </TouchableOpacity>
   );
 };
 
@@ -118,7 +96,6 @@ export const RadioButtonGroup = <T, Opt extends boolean>(
 ) => {
   type V = Opt extends true ? T | null : T;
   const { value, onChange, direction, style, children, optional } = props;
-  const childCount = React.Children.count(children);
 
   const handleChange = useCallback(
     (newValue: V, clear = false) => {
@@ -133,7 +110,7 @@ export const RadioButtonGroup = <T, Opt extends boolean>(
 
   return (
     <View
-      className="justify-between rounded-md border border-neutral-300"
+      className="mb-6 flex-row justify-between gap-2 rounded-md"
       style={[
         {
           justifyContent: 'space-between',
@@ -142,14 +119,12 @@ export const RadioButtonGroup = <T, Opt extends boolean>(
         { flexDirection: direction === 'horizontal' ? 'row' : 'column' },
       ]}
     >
-      {React.Children.map(children, (child, index) => {
+      {React.Children.map(children, (child) => {
         if (!React.isValidElement(child)) {
           console.error('Invalid children in Radio group');
           return null;
         }
         return React.cloneElement(child as any, {
-          index: index,
-          total: childCount,
           checked: child.props.value === value,
           onChange: handleChange,
         });

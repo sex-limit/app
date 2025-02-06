@@ -111,27 +111,40 @@ export default function Home() {
     <>
       <View className="absolute h-screen w-full rounded-2xl bg-[rgba(242,242,242)]">
         <Image
-          className="h-1/2 w-full rounded-b-2xl"
+          className="h-1/2 w-full rounded-b-3xl"
           source={require('@/ui/assets/image/home-bg.png')}
         />
       </View>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <SafeAreaView className="z-10 flex-1" style={{ flex: 1 }}>
-          <View className={'flex h-full flex-1 flex-col'}>
+          <View className={'flex h-full flex-1 flex-col px-4'}>
             {/* Profile Section */}
-            <View className="items-center pt-4">
+            <View className="items-center gap-y-6 py-4">
               <Image
-                source={{ uri: 'https://i.pravatar.cc/300' }}
-                className="h-20 w-20 rounded-2xl bg-gray-200"
+                source={{uri: 'https://sns-webpic-qc.xhscdn.com/202502051403/b3152fccf01f310f28a8072e260eee94/1040g008318l1tgj1466g5n9g8fgk6cpklpnjo5o!nd_dft_wlteh_webp_3'}}
+                className="h-24 w-24 rounded-xl"
               />
-              <Text className="mt-2 text-xl font-bold">黄子韬call me粉</Text>
-              <Text className="mt-1 text-sm text-[#666666]">
-                🎯 你已累计打卡慈慈 {checkedDays.size} 天
-              </Text>
+              <Text className="text-2xl font-medium text-white">六年之约</Text>
+              <View className="flex-row flex-wrap items-center gap-3">
+                {[
+                  { icon: 'check-circle', text: '六年之约打卡354天' },
+                  { icon: 'check-circle', text: '坚持戒涩60天' },
+                  { icon: 'clock-outline', text: '今天已记录' },
+                ].map((item, index) => (
+                  <View key={index} className="flex-row items-center rounded-lg bg-white/20 px-3 py-1.5">
+                    <MaterialCommunityIcons
+                      name={item.icon}
+                      size={12}
+                      color="#fff"
+                    />
+                    <Text className="ml-1 text-xs text-white">{item.text}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
 
             {/* Stats Section */}
-            <View className="mx-4 mt-4 rounded-2xl border border-[#8AB86E] bg-white p-4">
+            <View className="mt-4 rounded-2xl border border-[#8AB86E] bg-white p-4">
               <View className="flex-row justify-around">
                 <StatCard
                   value="30"
@@ -170,7 +183,7 @@ export default function Home() {
             </View>
 
             {/* Calendar Section */}
-            <View className="mx-4 mb-20 mt-4 rounded-2xl bg-white p-4">
+            <View className="mb-20 mt-4 rounded-2xl bg-white p-4">
               <YearCalendar
                 year={currentDate.year}
                 month={currentDate.month}
