@@ -12,6 +12,7 @@ import React, {
 import { Controller, useForm } from 'react-hook-form';
 import {
   Keyboard,
+  type LayoutChangeEvent,
   type NativeSyntheticEvent,
   Text,
   type TextInput as NTextInput,
@@ -182,6 +183,29 @@ const QuickNotes = forwardRef(
 
     const [emojiPickerExpanded, setEmojiPickerExpanded] = useState(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [bottomSheetHeight, setBottomSheetHeight] = useState<number | null>(
+      null,
+    );
+
+    const handleBottomSheetLayout = useCallback(
+      (event: LayoutChangeEvent) => {
+        if (bottomSheetHeight === null) {
+          setBottomSheetHeight(
+            Math.ceil(event.nativeEvent.layout.height) - 240,
+          );
+        }
+      },
+      [bottomSheetHeight],
+    );
+
+    const snapPoints = useMemo(() => {
+      const emojiPickerHeight = emojiPickerExpanded ? 240 : 0;
+      return [
+        (bottomSheetHeight ?? 300) +
+          Math.max(emojiPickerHeight, keyboardHeight) +
+          40,
+      ];
+    }, [bottomSheetHeight, emojiPickerExpanded, keyboardHeight]);
 
     const handleEmojiPickerToggle = useCallback((expanded: boolean) => {
       if (expanded) {
@@ -269,18 +293,23 @@ const QuickNotes = forwardRef(
         <BottomSheetModal
           index={0}
           ref={bottomSheetRef}
+          snapPoints={snapPoints}
           keyboardBehavior="extend"
           keyboardBlurBehavior="restore"
           enableContentPanningGesture={false}
           enableHandlePanningGesture={true}
           enableOverDrag={true}
-          enableDynamicSizing={true}
+          enableDynamicSizing={false}
+          onChange={handleBottomSheetChange}
           backgroundStyle={{
             backgroundColor: '#fff',
             borderRadius: 20,
           }}
         >
-          <BottomSheetView className="px-5 pt-4">
+          <BottomSheetView
+            className="px-5 pt-4"
+            onLayout={handleBottomSheetLayout}
+          >
             {/* Header */}
             <View className="mb-6 flex-row items-center justify-between">
               <TouchableOpacity
