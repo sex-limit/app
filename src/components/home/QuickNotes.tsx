@@ -403,18 +403,17 @@ const QuickNotes = forwardRef(
 
               {/* Emoji Picker */}
               <View className="mt-3">
-                <EmojiPicker
+                <EmojiPicker.Provider
                   isExpanded={emojiPickerExpanded}
-                  onToggleExpand={handleEmojiPickerToggle}
-                  ActionBarLeft={ImageUpload}
                   onEmojiSelected={handleSelectEmoji}
-                  emojiSize={24}
-                  style={{
-                    backgroundColor: '#F5F5F5',
-                    borderRadius: 12,
-                    padding: 8,
-                  }}
-                />
+                  onToggleExpand={handleEmojiPickerToggle}
+                >
+                  <View className="flex-row items-center gap-2">
+                    <ImageUpload />
+                    <EmojiPicker.Toggler />
+                  </View>
+                  <EmojiPicker.Picker />
+                </EmojiPicker.Provider>
               </View>
             </View>
           </BottomSheetView>
