@@ -9,7 +9,6 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -282,11 +281,12 @@ function generateMockComments(count: number, withReply = true) {
     '哥们加油💪，你可以',
     '加油，你也可以的',
     '你是最棒的',
-    '你的努力我看在眼里',
-    '我相信你一定可以的',
-    '加油，你是最棒的',
-    '你的努力终将会得到回报',
-    '你是最棒的，加油',
+    'Distinctio repellendus distinctio voluptatem.',
+    'Ea ullam quia accusantium.',
+    'Eius repellat maiores corrupti.',
+    'Et quo rerum vitae ipsam. Voluptatem omnis velit. Sint eos omnis voluptatem voluptate quod rerum. Consectetur qui delectus repellendus quae dolore unde molestiae. Consectetur debitis libero eum voluptas.',
+    'Ipsam illo vero nesciunt perferendis ut iusto saepe. Autem voluptatem labore rerum consequatur reprehenderit molestias ab non. Ipsum ducimus similique quos eius ut nisi.',
+    'Quis sunt ut rerum et sint nam rerum qui. Eum tempore earum est molestias aut iure. Labore distinctio quae maxime ipsam ut porro vitae. Rerum in reprehenderit fuga ipsam tempore ea soluta. Commodi et fuga et et. Fugiat aut optio sit magni.',
   ];
   const candidateUserName = ['Alice', 'Bob', 'Charlie', 'David', 'Eve'];
   const candidateLocation = ['上海', '北京', '杭州', '合肥', '南京'];
@@ -318,7 +318,7 @@ function generateMockComments(count: number, withReply = true) {
     };
     const comment: IPostCommentListItem = {
       id: i.toString(),
-      createAt: new Date(Date.now() - i * 1000).toISOString(),
+      createAt: new Date(Date.now() - i * 1000000000).toISOString(),
       body: candidateBody[i % candidateBody.length],
       ip_location: candidateLocation[i % candidateLocation.length],
       favoriteCounts,
@@ -355,10 +355,14 @@ const PostCommentMore = ({
           onPress={() => onTriggerMore()}
           className="flex-row items-center justify-center"
         >
-          <Text className="text-gray-500">
-            展开 {total - visibleCount} 条评论
+          <Text style={{ color: '#153663' }} className="font-bold">
+            展开 {total - visibleCount} 条回复
           </Text>
-          <MaterialCommunityIcons name="chevron-down" size={16} color="#666" />
+          <MaterialCommunityIcons
+            name="chevron-down"
+            size={16}
+            color="#153663"
+          />
         </TouchableOpacity>
       )}
       {visibleCount > defaultVisibleCount && (
@@ -366,8 +370,10 @@ const PostCommentMore = ({
           onPress={() => onFold()}
           className="flex-row items-center justify-center"
         >
-          <Text className="text-gray-500">收起</Text>
-          <MaterialCommunityIcons name="chevron-up" size={16} color="#666" />
+          <Text style={{ color: '#153663' }} className="font-bold">
+            收起
+          </Text>
+          <MaterialCommunityIcons name="chevron-up" size={16} color="#153663" />
         </TouchableOpacity>
       )}
     </View>
@@ -391,24 +397,60 @@ const PostCommentItem = ({ type, comment }: PostCommentItemProps) => {
   return (
     <View>
       <View className="mb-2 flex-row">
-        <Image
-          source={{ uri: comment.user.avatar }}
-          className="h-8 w-8 rounded-full"
-        />
-        <View className="ml-2 flex-1">
-          <Text className="font-medium">{comment.user.username}</Text>
-          <Text className="text-gray-600">{comment.body}</Text>
-          <View className="mt-1 flex-row">
-            <Text className="text-gray-400">{comment.favoriteCounts}</Text>
-            <Text className="mx-2 text-gray-400">·</Text>
-            <TouchableOpacity>
-              <Text className="text-gray-400">回复</Text>
-            </TouchableOpacity>
-          </View>
+        {type === 'comment' ? (
+          <Image
+            source={{ uri: comment.user.avatar }}
+            className="h-9 w-9 rounded-full"
+          />
+        ) : (
+          <Image
+            source={{ uri: comment.user.avatar }}
+            className="h-6 w-6 rounded-full"
+          />
+        )}
+        <View className="ml-3 flex-1">
+          <Text className=" text-neutral-500">{comment.user.username}</Text>
+          <Text
+            className="mt-1 text-base"
+            style={{
+              lineHeight: 24,
+            }}
+          >
+            <Text className=" text-base text-neutral-700">{comment.body} </Text>
+            <View
+              className="flex-row items-center gap-2"
+              style={{
+                transform: [{ translateY: 4 }],
+                minWidth: 200,
+              }}
+            >
+              <Text className="text-sm text-neutral-400">
+                {toRelativeDate(new Date(comment.createAt))}
+              </Text>
+              <Text className="text-sm text-neutral-400">
+                {comment.ip_location}
+              </Text>
+              <TouchableOpacity>
+                <Text className="text-sm text-neutral-600">回复</Text>
+              </TouchableOpacity>
+            </View>
+          </Text>
+        </View>
+        <View className="ml-3 flex-col items-center gap-1">
+          <TouchableOpacity>
+            <Icon
+              name={comment.isLiked ? 'heart' : 'heart-outline'}
+              size={20}
+              color={comment.isLiked ? '#F87171' : '#525252'}
+            />
+          </TouchableOpacity>
+          <Text className="text-sm text-neutral-600">
+            {comment.favoriteCounts}
+          </Text>
         </View>
       </View>
       {type === 'comment' && (
-        <View className="ml-10">
+        <View style={{ paddingLeft: 42 }}>
           {comment.replies.length > 0 &&
             comment.replies.map(
               (reply, index) =>
@@ -423,18 +465,21 @@ const PostCommentItem = ({ type, comment }: PostCommentItemProps) => {
             onTriggerMore={() => setVisibleCount((prev) => prev + 4)}
             onFold={() => setVisibleCount(defaultVisibleCount)}
           />
+          <View className="mb-3 mt-1">
+            <View className="border-t border-neutral-200 " />
+          </View>
         </View>
       )}
     </View>
   );
 };
 
+const commentsData = generateMockComments(10);
 const PostComments = () => {
-  const commentsData = useMemo(() => generateMockComments(10), []);
   const defaultVisibleCount = 2;
   const [visibleCount, setVisibleCount] = useState(defaultVisibleCount);
   return (
-    <View style={{ paddingBottom: 40 }}>
+    <View className="pt-2">
       <View>
         {commentsData.map(
           (comment, index) =>
