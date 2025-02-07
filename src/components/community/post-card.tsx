@@ -9,11 +9,15 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   Image,
+  Keyboard,
+  type LayoutChangeEvent,
   type StyleProp,
   Text,
   TouchableOpacity,
@@ -29,6 +33,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import { useKeyboard } from '@/hooks/useKeyboard';
 import { EmojiPicker } from '@/ui/emojiPicker';
 import { toRelativeDate } from '@/utils/date';
 
@@ -78,11 +83,13 @@ const PopoverButton = ({
   const onTriggerLayout = useCallback(() => {
     Promise.all([
       new Promise<Layout>((resolve) => {
+        // eslint-disable-next-line max-params
         triggerRef.current?.measureInWindow((x, y, width, height) => {
           resolve({ x, y, width, height });
         });
       }),
       new Promise<Layout>((resolve) => {
+        // eslint-disable-next-line max-params
         menuRef.current?.measureInWindow((x, y, width, height) => {
           resolve({ x, y, width, height });
         });
@@ -524,7 +531,14 @@ const PostReplyBottomSheet = forwardRef<
   const [id, setId] = useState('');
   const [replyTo, setReplyTo] = useState<User | undefined>();
   const [refContent, setRefContent] = useState<string>();
-  const [content, setContent] = useState('');
+
+  const { control, setValue, handleSubmit, getValues } = useForm<{
+    content: string;
+  }>({
+    defaultValues: {
+      content: '',
+    },
+  });
 
   const open = useCallback(
     (
@@ -542,10 +556,11 @@ const PostReplyBottomSheet = forwardRef<
         refContent ||
           'Blanditiis inventore labore eveniet quia corrupti ex voluptatem omnis.',
       );
-      setContent('');
+      setValue('content', '');
       bottomSheetModalRef.current?.present();
+      // todo: focus on input
     },
-    [],
+    [setValue],
   );
 
   const close = useCallback(() => {
@@ -558,19 +573,66 @@ const PostReplyBottomSheet = forwardRef<
   }));
 
   const onSendComment = useCallback(() => {
-    onSend(type, id, content);
+    onSend(type, id, getValues().content);
     bottomSheetModalRef.current?.dismiss();
-  }, [content, id, onSend, type]);
+  }, [getValues, id, onSend, type]);
+
+  const handleBottomSheetChange = useCallback(
+    (index: number) => {
+      if (index === -1) {
+        close();
+      }
+    },
+    [close],
+  );
+
+  const [emojiPickerExpanded, setEmojiPickerExpanded] = useState(false);
+
+  const handleEmojiPickerToggle = useCallback((expanded: boolean) => {
+    if (expanded) {
+      Keyboard.dismiss();
+    }
+    setEmojiPickerExpanded(expanded);
+  }, []);
+
+  const handleKeyboardShow = useCallback(() => {
+    handleEmojiPickerToggle(false);
+  }, [handleEmojiPickerToggle]);
+
+  const { keyboardHeight } = useKeyboard(handleKeyboardShow);
+
+  const [bottomSheetHeight, setBottomSheetHeight] = useState<number | null>(
+    null,
+  );
+
+  const handleBottomSheetLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      if (bottomSheetHeight === null) {
+        setBottomSheetHeight(Math.ceil(event.nativeEvent.layout.height));
+      }
+    },
+    [bottomSheetHeight],
+  );
+
+  const snapPoints = useMemo(() => {
+    const emojiPickerHeight = emojiPickerExpanded ? 240 : 0;
+    return [
+      (bottomSheetHeight ?? 60) +
+        Math.max(emojiPickerHeight, keyboardHeight) +
+        30,
+    ];
+  }, [bottomSheetHeight, emojiPickerExpanded, keyboardHeight]);
 
   return (
     <BottomSheetModal
       index={0}
       ref={bottomSheetModalRef}
-      keyboardBehavior="interactive"
+      snapPoints={snapPoints}
+      keyboardBehavior="extend"
       keyboardBlurBehavior="restore"
-      enableDynamicSizing={false}
       enableContentPanningGesture={false}
-      snapPoints={[500]}
+      enableDynamicSizing={false}
+      onChange={handleBottomSheetChange}
       backdropComponent={() => (
         <View className="absolute h-screen w-screen bg-black/30" />
       )}
@@ -602,32 +664,34 @@ const PostReplyBottomSheet = forwardRef<
         </View>
       )}
     >
-      <BottomSheetView className="px-4 py-2">
+      <BottomSheetView className="px-4 py-2" onLayout={handleBottomSheetLayout}>
         <EmojiPicker.Provider
-          isExpanded={true}
+          isExpanded={emojiPickerExpanded}
           onEmojiSelected={() => {}}
-          onToggleExpand={() => {}}
+          onToggleExpand={handleEmojiPickerToggle}
         >
-          <View className="mb-4 flex-row items-stretch">
-            <BottomSheetTextInput
-              value={content}
-              onChangeText={setContent}
-              placeholder="发一条友善的评论吧 ~"
-              multiline
-              numberOfLines={5}
-              textAlignVertical="top"
-              style={{
-                lineHeight: 20,
-                height: 100 + 20,
-                padding: 10,
-              }}
-              className="rounded-lg bg-[#EBEBEB]"
-            />
-            <View className="rounded-r-full bg-neutral-100 px-5 pl-2 text-base">
-              <EmojiPicker.Toggler size={24} padding={8} />
+          <View className="flex-col gap-2 ">
+            <View className="flex-row items-stretch">
+              <Controller
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <BottomSheetTextInput
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder="发一条友善的评论吧 ~"
+                    numberOfLines={1}
+                    textAlignVertical="center"
+                    className="flex-1 rounded-l-full bg-neutral-100 px-5 py-2 pr-2 text-base"
+                  />
+                )}
+                name="content"
+              />
+              <View className="rounded-r-full bg-neutral-100 px-5 pl-2 text-base">
+                <EmojiPicker.Toggler size={24} padding={8} />
+              </View>
             </View>
+            <EmojiPicker.Picker />
           </View>
-          <EmojiPicker.Picker />
         </EmojiPicker.Provider>
       </BottomSheetView>
     </BottomSheetModal>
