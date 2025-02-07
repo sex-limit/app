@@ -29,6 +29,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import { EmojiPicker } from '@/ui/emojiPicker';
 import { toRelativeDate } from '@/utils/date';
 
 interface PostCardAvatarProps {
@@ -409,7 +410,7 @@ const PostCommentItem = ({ type, comment }: PostCommentItemProps) => {
           />
         )}
         <View className="ml-3 flex-1">
-          <Text className=" text-neutral-500">{comment.user.username}</Text>
+          <Text className="text-neutral-500">{comment.user.username}</Text>
           <Text
             className="mt-1 text-base"
             style={{
@@ -567,10 +568,18 @@ const PostReplyBottomSheet = forwardRef<
       ref={bottomSheetModalRef}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
-      enableDynamicSizing={true}
+      enableDynamicSizing={false}
+      enableContentPanningGesture={false}
+      snapPoints={[500]}
+      backdropComponent={() => (
+        <View className="absolute h-screen w-screen bg-black/30" />
+      )}
+      backgroundStyle={{
+        borderRadius: 0,
+      }}
       handleComponent={() => (
-        <View className="flex-row items-center justify-between gap-2 rounded-t-2xl bg-neutral-200 px-4 ">
-          <View className="flex-1 flex-row items-center justify-start py-2">
+        <View className="flex-row items-center justify-between gap-2 rounded-t-2xl bg-neutral-100 px-4 ">
+          <View className="flex-1 flex-row items-center justify-start py-1">
             <Text className="text-neutral-500">回复 </Text>
             {replyTo && (
               <>
@@ -587,35 +596,39 @@ const PostReplyBottomSheet = forwardRef<
               </Text>
             )}
           </View>
-          <TouchableOpacity onPress={close} className="p-2">
+          <TouchableOpacity onPress={close} className="p-1">
             <MaterialCommunityIcons name="close" size={16} color="#666" />
           </TouchableOpacity>
         </View>
       )}
     >
-      <BottomSheetView className="p-4">
-        <View>
-          <BottomSheetTextInput
-            value={content}
-            onChangeText={setContent}
-            placeholder="发一条友善的评论吧 ~"
-            multiline
-            numberOfLines={5}
-            textAlignVertical="top"
-            style={{
-              lineHeight: 20,
-              height: 100 + 20,
-              padding: 10,
-            }}
-            className="rounded-lg bg-[#EBEBEB]"
-          />
-          <TouchableOpacity
-            onPress={onSendComment}
-            className="mt-2 h-10 flex-row items-center justify-center rounded-lg bg-[#84AB62]"
-          >
-            <Text className="text-white">发送</Text>
-          </TouchableOpacity>
-        </View>
+      <BottomSheetView className="px-4 py-2">
+        <EmojiPicker.Provider
+          isExpanded={true}
+          onEmojiSelected={() => {}}
+          onToggleExpand={() => {}}
+        >
+          <View className="mb-4 flex-row items-stretch">
+            <BottomSheetTextInput
+              value={content}
+              onChangeText={setContent}
+              placeholder="发一条友善的评论吧 ~"
+              multiline
+              numberOfLines={5}
+              textAlignVertical="top"
+              style={{
+                lineHeight: 20,
+                height: 100 + 20,
+                padding: 10,
+              }}
+              className="rounded-lg bg-[#EBEBEB]"
+            />
+            <View className="rounded-r-full bg-neutral-100 px-5 pl-2 text-base">
+              <EmojiPicker.Toggler size={24} padding={8} />
+            </View>
+          </View>
+          <EmojiPicker.Picker />
+        </EmojiPicker.Provider>
       </BottomSheetView>
     </BottomSheetModal>
   );

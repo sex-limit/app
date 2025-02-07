@@ -64,10 +64,15 @@ const Provider = ({
   );
 };
 
+interface TogglerProps {
+  size?: number;
+  padding?: number;
+}
+
 /**
  * Used inside a Provider to toggle the expanded state of the EmojiPicker
  */
-const Toggler = () => {
+const Toggler = ({ size = 24, padding = 8 }: TogglerProps) => {
   const { setIsExpanded } = useContext(EmojiPickerContext);
 
   const handleToggleExpand = useCallback(() => {
@@ -75,10 +80,10 @@ const Toggler = () => {
   }, [setIsExpanded]);
 
   return (
-    <TouchableOpacity onPress={handleToggleExpand} className="p-2">
+    <TouchableOpacity onPress={handleToggleExpand} style={{ padding }}>
       <MaterialCommunityIcons
         name="emoticon-excited-outline"
-        size={24}
+        size={size}
         color="#666"
       />
     </TouchableOpacity>
@@ -86,8 +91,8 @@ const Toggler = () => {
 };
 
 interface PickerProps {
-  emojiSize: number;
-  columns: number;
+  emojiSize?: number;
+  columns?: number;
 }
 
 /**
