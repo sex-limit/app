@@ -413,7 +413,7 @@ const QuickNotes = forwardRef(
                     <EmojiPicker.QuickInput />
                     <EmojiPicker.Toggler />
                   </View>
-                  <EmojiPicker.Picker />
+                  <EmojiPicker.Picker emojiSize={24} columns={8} />
                 </EmojiPicker.Provider>
               </View>
             </View>

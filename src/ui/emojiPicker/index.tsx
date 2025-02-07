@@ -28,6 +28,12 @@ interface EmojiPickerProviderProps {
   children: React.ReactNode;
 }
 
+/**
+ * Provides the EmojiPicker context with expanded state and event handlers
+ * to a pair of Toggler and Picker components.
+ *
+ * As some child components is memorized, you may need to memorize `onEmojiSelected`
+ */
 const Provider = ({
   isExpanded,
   onToggleExpand,
@@ -58,6 +64,9 @@ const Provider = ({
   );
 };
 
+/**
+ * Used inside a Provider to toggle the expanded state of the EmojiPicker
+ */
 const Toggler = () => {
   const { setIsExpanded } = useContext(EmojiPickerContext);
 
@@ -76,7 +85,15 @@ const Toggler = () => {
   );
 };
 
-const Picker = () => {
+interface PickerProps {
+  emojiSize: number;
+  columns: number;
+}
+
+/**
+ * Used inside a Provider to display the EmojiPicker
+ */
+const Picker = ({ emojiSize = 24, columns = 8 }: PickerProps) => {
   const { isExpanded, onEmojiSelected } = useContext(EmojiPickerContext);
 
   const selectorOpacity = useSharedValue(0);
@@ -104,13 +121,22 @@ const Picker = () => {
         selectorStyle,
       ]}
     >
-      <EmojiTabs columns={8} onEmojiPress={onEmojiSelected} />
+      <EmojiTabs
+        columns={columns}
+        emojiSize={emojiSize}
+        onEmojiPress={onEmojiSelected}
+      />
     </Animated.View>
   );
 };
 
 const FREQUENTLY_USED_EMOJIS = ['😊', '😂', '❤️', '👍', '🎉'];
 
+/**
+ * Optional component to quickly input emojis
+ *
+ * It should be used inside a Provider as well.
+ */
 const QuickInput = () => {
   const { onEmojiSelected } = useContext(EmojiPickerContext);
 

@@ -7,35 +7,39 @@ interface EmojiListProps {
   slug: string;
   emojis: Emoji[];
   columns: number;
+  emojiSize: number;
   onEmojiPress: (emoji: string) => void;
 }
 
-export const EmojiList = React.memo(
-  ({ emojis, columns, onEmojiPress }: EmojiListProps) => {
-    const renderItem = useCallback(
-      ({ item }: { item: Emoji }) => (
-        <EmojiItem emoji={item.emoji} size={24} onPress={onEmojiPress} />
-      ),
-      [onEmojiPress],
-    );
+export const EmojiList = ({
+  emojis,
+  columns,
+  onEmojiPress,
+  emojiSize,
+}: EmojiListProps) => {
+  const renderItem = useCallback(
+    ({ item }: { item: Emoji }) => (
+      <EmojiItem emoji={item.emoji} size={emojiSize} onPress={onEmojiPress} />
+    ),
+    [onEmojiPress, emojiSize],
+  );
 
-    const getItemType = useCallback(() => {
-      return 'emoji';
-    }, []);
+  const getItemType = useCallback(() => {
+    return 'emoji';
+  }, []);
 
-    return (
-      <FlashList
-        className="flex-1"
-        data={emojis}
-        renderItem={renderItem}
-        estimatedItemSize={32.4}
-        numColumns={columns}
-        keyExtractor={(item) => item.slug}
-        getItemType={getItemType}
-        contentContainerStyle={{
-          paddingVertical: 8,
-        }}
-      />
-    );
-  },
-);
+  return (
+    <FlashList
+      className="flex-1"
+      data={emojis}
+      renderItem={renderItem}
+      estimatedItemSize={32.4}
+      numColumns={columns}
+      keyExtractor={(item) => item.slug}
+      getItemType={getItemType}
+      contentContainerStyle={{
+        paddingVertical: 8,
+      }}
+    />
+  );
+};
