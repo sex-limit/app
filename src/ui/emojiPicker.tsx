@@ -403,8 +403,28 @@ const Picker = () => {
   );
 };
 
+const FREQUENTLY_USED_EMOJIS = ['😊', '😂', '❤️', '👍', '🎉'];
+
+const QuickInput = () => {
+  const { onEmojiSelected } = useContext(EmojiPickerContext);
+
+  return (
+    <View className="flex-row items-center">
+      {FREQUENTLY_USED_EMOJIS.map((emoji) => (
+        <EmojiItem
+          key={emoji}
+          emoji={emoji}
+          size={20}
+          onPress={onEmojiSelected}
+        />
+      ))}
+    </View>
+  );
+};
+
 export const EmojiPicker = {
   Provider,
   Toggler,
   Picker,
+  QuickInput,
 };

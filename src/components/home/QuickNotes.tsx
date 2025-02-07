@@ -410,6 +410,7 @@ const QuickNotes = forwardRef(
                 >
                   <View className="flex-row items-center gap-2">
                     <ImageUpload />
+                    <EmojiPicker.QuickInput />
                     <EmojiPicker.Toggler />
                   </View>
                   <EmojiPicker.Picker />
