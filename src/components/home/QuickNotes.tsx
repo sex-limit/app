@@ -190,9 +190,7 @@ const QuickNotes = forwardRef(
     const handleBottomSheetLayout = useCallback(
       (event: LayoutChangeEvent) => {
         if (bottomSheetHeight === null) {
-          setBottomSheetHeight(
-            Math.ceil(event.nativeEvent.layout.height) - 240,
-          );
+          setBottomSheetHeight(Math.ceil(event.nativeEvent.layout.height));
         }
       },
       [bottomSheetHeight],

@@ -361,7 +361,7 @@ const EmojiPicker = memo(
           style={[
             {
               transformOrigin: 'top',
-              height: 240,
+              height: isExpanded ? 240 : 0,
               width: '100%',
               position: 'relative',
               bottom: 0,
