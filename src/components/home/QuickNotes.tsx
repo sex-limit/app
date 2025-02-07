@@ -3,7 +3,6 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -28,6 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { type CheckInRecord, type RecordMode } from '@/contexts/CheckInContext';
+import { useKeyboard } from '@/hooks/useKeyboard';
 import { Input } from '@/ui';
 import { EmojiPicker } from '@/ui/emojiPicker';
 import {
@@ -182,7 +182,20 @@ const QuickNotes = forwardRef(
     }));
 
     const [emojiPickerExpanded, setEmojiPickerExpanded] = useState(false);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    const handleEmojiPickerToggle = useCallback((expanded: boolean) => {
+      if (expanded) {
+        Keyboard.dismiss();
+      }
+      setEmojiPickerExpanded(expanded);
+    }, []);
+
+    const handleKeyboardShow = useCallback(() => {
+      handleEmojiPickerToggle(false);
+    }, [handleEmojiPickerToggle]);
+
+    const { keyboardHeight } = useKeyboard(handleKeyboardShow);
+
     const [bottomSheetHeight, setBottomSheetHeight] = useState<number | null>(
       null,
     );
@@ -204,40 +217,6 @@ const QuickNotes = forwardRef(
           40,
       ];
     }, [bottomSheetHeight, emojiPickerExpanded, keyboardHeight]);
-
-    const handleEmojiPickerToggle = useCallback((expanded: boolean) => {
-      if (expanded) {
-        Keyboard.dismiss();
-      }
-      setEmojiPickerExpanded(expanded);
-    }, []);
-
-    useEffect(() => {
-      const keyboardWillShow = () => {
-        let metrics = Keyboard.metrics();
-        handleEmojiPickerToggle(false);
-        if (!metrics) {
-          setKeyboardHeight(240);
-        } else {
-          setKeyboardHeight(metrics.height);
-        }
-      };
-      const keyboardWillHide = () => {
-        setKeyboardHeight(0);
-      };
-      const showSubscription = Keyboard.addListener(
-        'keyboardDidShow',
-        keyboardWillShow,
-      );
-      const hideSubscription = Keyboard.addListener(
-        'keyboardDidHide',
-        keyboardWillHide,
-      );
-      return () => {
-        showSubscription.remove();
-        hideSubscription.remove();
-      };
-    }, [handleEmojiPickerToggle]);
 
     const selection = useRef({ start: 0, end: 0 });
     const inputRef = useRef<NTextInput>(null);
