@@ -1,17 +1,8 @@
-import { FlashList } from '@shopify/flash-list';
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
   type LayoutChangeEvent,
   PanResponder,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -23,11 +14,7 @@ import Animated, {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import groupedEmojisJSON from 'unicode-emoji-json/data-by-group.json';
 
-export interface Emoji {
-  emoji: string;
-  name: string;
-  slug: string;
-}
+import { EmojiList } from './emoji-list';
 
 const EmojiVersionCap = 14.0;
 
@@ -43,22 +30,7 @@ const groupedEmojis = groupedEmojisJSON.reduce(
   },
   {} as Record<string, (typeof groupedEmojisJSON)[number]>,
 );
-
-interface EmojiItemProps {
-  emoji: string;
-  size: number;
-  onPress: (emoji: string) => void;
-}
-
-const EmojiItem = React.memo(({ emoji, size, onPress }: EmojiItemProps) => {
-  return (
-    <TouchableOpacity className="m-auto p-1" onPress={() => onPress(emoji)}>
-      <Text style={{ fontSize: size, margin: 'auto' }}>{emoji}</Text>
-    </TouchableOpacity>
-  );
-});
-
-const EMOJI_CATEGORIES = [
+export const EMOJI_CATEGORIES = [
   {
     slug: 'smileys_emotion',
     icon: 'emoticon-happy-outline',
@@ -102,7 +74,7 @@ interface EmojiTabsHeaderProps {
   onTabChange: (slug: string, index: number) => void;
 }
 
-const EmojiTabsHeader: React.FC<EmojiTabsHeaderProps> = ({
+export const EmojiTabsHeader: React.FC<EmojiTabsHeaderProps> = ({
   activeTab,
   onTabChange,
 }) => {
@@ -135,49 +107,15 @@ const EmojiTabsHeader: React.FC<EmojiTabsHeaderProps> = ({
   );
 };
 
-interface EmojiListProps {
-  slug: string;
-  emojis: Emoji[];
-  columns: number;
-  onEmojiPress: (emoji: string) => void;
-}
-
-const EmojiList = React.memo(
-  ({ emojis, columns, onEmojiPress }: EmojiListProps) => {
-    const renderItem = useCallback(
-      ({ item }: { item: Emoji }) => (
-        <EmojiItem emoji={item.emoji} size={24} onPress={onEmojiPress} />
-      ),
-      [onEmojiPress],
-    );
-
-    const getItemType = useCallback(() => {
-      return 'emoji';
-    }, []);
-
-    return (
-      <FlashList
-        className="flex-1"
-        data={emojis}
-        renderItem={renderItem}
-        estimatedItemSize={32.4}
-        numColumns={columns}
-        keyExtractor={(item) => item.slug}
-        getItemType={getItemType}
-        contentContainerStyle={{
-          paddingVertical: 8,
-        }}
-      />
-    );
-  },
-);
-
 interface EmojiTabsProps {
   columns: number;
   onEmojiPress: (emoji: string) => void;
 }
 
-const EmojiTabs: React.FC<EmojiTabsProps> = ({ columns, onEmojiPress }) => {
+export const EmojiTabs: React.FC<EmojiTabsProps> = ({
+  columns,
+  onEmojiPress,
+}) => {
   const [activeTab, setActiveTab] = useState('smileys_emotion');
   const containerRef = useRef<View>(null);
   const width = useSharedValue(Dimensions.get('window').width);
@@ -293,138 +231,4 @@ const EmojiTabs: React.FC<EmojiTabsProps> = ({ columns, onEmojiPress }) => {
       </Animated.View>
     </View>
   );
-};
-
-export interface EmojiPickerProps {
-  onEmojiSelected: (emoji: string) => void;
-  isExpanded: boolean;
-  onToggleExpand: (isExpanded: boolean) => void;
-  ActionBarLeft?: React.ComponentType;
-  ActionBarRight?: React.ComponentType;
-}
-
-interface EmojiPickerContextValue {
-  isExpanded: boolean;
-  setIsExpanded: (isExpanded: boolean | ((prev: boolean) => boolean)) => void;
-  onEmojiSelected: (emoji: string) => void;
-}
-
-const EmojiPickerContext = React.createContext<EmojiPickerContextValue>({
-  isExpanded: false,
-  setIsExpanded: () => {},
-  onEmojiSelected: () => {},
-});
-
-interface EmojiPickerProviderProps {
-  isExpanded: boolean;
-  onToggleExpand: (isExpanded: boolean) => void;
-  onEmojiSelected: (emoji: string) => void;
-  children: React.ReactNode;
-}
-
-const Provider = ({
-  isExpanded,
-  onToggleExpand,
-  onEmojiSelected,
-  children,
-}: EmojiPickerProviderProps) => {
-  const handleSetIsExpanded = useCallback(
-    (value: boolean | ((prev: boolean) => boolean)) => {
-      if (typeof value === 'function') {
-        onToggleExpand(value(isExpanded));
-      } else {
-        onToggleExpand(value);
-      }
-    },
-    [isExpanded, onToggleExpand],
-  );
-
-  return (
-    <EmojiPickerContext.Provider
-      value={{
-        isExpanded,
-        setIsExpanded: handleSetIsExpanded,
-        onEmojiSelected,
-      }}
-    >
-      {children}
-    </EmojiPickerContext.Provider>
-  );
-};
-
-const Toggler = () => {
-  const { setIsExpanded } = useContext(EmojiPickerContext);
-
-  const handleToggleExpand = useCallback(() => {
-    setIsExpanded((prev) => !prev);
-  }, [setIsExpanded]);
-
-  return (
-    <TouchableOpacity onPress={handleToggleExpand} className="p-2">
-      <MaterialCommunityIcons
-        name="emoticon-excited-outline"
-        size={24}
-        color="#666"
-      />
-    </TouchableOpacity>
-  );
-};
-
-const Picker = () => {
-  const { isExpanded, onEmojiSelected } = useContext(EmojiPickerContext);
-
-  const selectorOpacity = useSharedValue(0);
-
-  const selectorStyle = useAnimatedStyle(() => ({
-    opacity: selectorOpacity.value,
-  }));
-
-  useEffect(() => {
-    selectorOpacity.value = isExpanded ? 1 : 0;
-  }, [isExpanded, selectorOpacity]);
-
-  return (
-    <Animated.View
-      style={[
-        {
-          transformOrigin: 'top',
-          height: isExpanded ? 240 : 0,
-          width: '100%',
-          position: 'relative',
-          bottom: 0,
-          left: 0,
-          right: 0,
-        },
-        selectorStyle,
-      ]}
-    >
-      <EmojiTabs columns={8} onEmojiPress={onEmojiSelected} />
-    </Animated.View>
-  );
-};
-
-const FREQUENTLY_USED_EMOJIS = ['😊', '😂', '❤️', '👍', '🎉'];
-
-const QuickInput = () => {
-  const { onEmojiSelected } = useContext(EmojiPickerContext);
-
-  return (
-    <View className="flex-row items-center">
-      {FREQUENTLY_USED_EMOJIS.map((emoji) => (
-        <EmojiItem
-          key={emoji}
-          emoji={emoji}
-          size={20}
-          onPress={onEmojiSelected}
-        />
-      ))}
-    </View>
-  );
-};
-
-export const EmojiPicker = {
-  Provider,
-  Toggler,
-  Picker,
-  QuickInput,
 };
