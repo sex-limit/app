@@ -302,21 +302,6 @@ function generateMockComments(count: number, withReply = true) {
   let replies: IPostCommentReplyItem[] = [];
   for (let i = 0; i < count; i++) {
     const favoriteCounts = Math.floor(Math.random() * 10);
-    if (withReply) {
-      let temp = generateMockComments(
-        Math.floor(Math.random() * favoriteCounts),
-        false,
-      );
-      replies = temp.map((reply) => {
-        return {
-          ...reply,
-          replyTo:
-            Math.random() > 0.5
-              ? user
-              : temp[Math.floor(Math.random() * temp.length)].user,
-        };
-      });
-    }
     const user = {
       id: i,
       createAt: new Date(Date.now() - i * 1000).toISOString(),
@@ -336,6 +321,23 @@ function generateMockComments(count: number, withReply = true) {
       replies: replies,
     };
     comments.push(comment);
+
+    if (withReply) {
+      let temp = generateMockComments(
+        Math.floor(Math.random() * favoriteCounts),
+        false,
+      );
+      replies = temp.map((reply) => {
+        return {
+          ...reply,
+          replyTo:
+            Math.random() > 0.5
+              ? user
+              : temp[Math.floor(Math.random() * temp.length)].user,
+        };
+      });
+    }
+
   }
   return comments;
 }
@@ -390,13 +392,13 @@ const PostCommentMore = ({
 
 type PostCommentItemProps =
   | {
-      type: 'comment';
-      comment: IPostCommentListItem;
-    }
+    type: 'comment';
+    comment: IPostCommentListItem;
+  }
   | {
-      type: 'reply';
-      comment: IPostCommentReplyItem;
-    };
+    type: 'reply';
+    comment: IPostCommentReplyItem;
+  };
 
 const PostCommentItem = ({ type, comment }: PostCommentItemProps) => {
   const defaultVisibleCount = 2;
@@ -554,7 +556,7 @@ const PostReplyBottomSheet = forwardRef<
       setReplyTo(replyTo);
       setRefContent(
         refContent ||
-          'Blanditiis inventore labore eveniet quia corrupti ex voluptatem omnis.',
+        'Blanditiis inventore labore eveniet quia corrupti ex voluptatem omnis.',
       );
       setValue('content', '');
       bottomSheetModalRef.current?.present();
@@ -618,8 +620,8 @@ const PostReplyBottomSheet = forwardRef<
     const emojiPickerHeight = emojiPickerExpanded ? 240 : 0;
     return [
       (bottomSheetHeight ?? 60) +
-        Math.max(emojiPickerHeight, keyboardHeight) +
-        30,
+      Math.max(emojiPickerHeight, keyboardHeight) +
+      30,
     ];
   }, [bottomSheetHeight, emojiPickerExpanded, keyboardHeight]);
 
@@ -667,7 +669,7 @@ const PostReplyBottomSheet = forwardRef<
       <BottomSheetView className="px-4 py-2" onLayout={handleBottomSheetLayout}>
         <EmojiPicker.Provider
           isExpanded={emojiPickerExpanded}
-          onEmojiSelected={() => {}}
+          onEmojiSelected={() => { }}
           onToggleExpand={handleEmojiPickerToggle}
         >
           <View className="flex-col gap-2 ">
@@ -700,7 +702,7 @@ const PostReplyBottomSheet = forwardRef<
 
 interface PostReactionProps
   extends PostFavoriteActionProps,
-    PostShareActionProp {
+  PostShareActionProp {
   author: User;
   commentCount: number;
 }
