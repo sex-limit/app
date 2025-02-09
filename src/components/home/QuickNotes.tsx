@@ -259,7 +259,6 @@ const QuickNotes = forwardRef(
     );
 
     const inputScrollViewRef = useRef<ScrollView>(null);
-    const [scrollViewHeight, setScrollViewHeight] = useState<number>(24 * 8);
     const handleImagePickerChange = useCallback(
       (images: string[], old: string[]) => {
         if (images.length > old.length) {
@@ -365,7 +364,7 @@ const QuickNotes = forwardRef(
                 />
                 <ScrollView
                   style={{
-                    height: scrollViewHeight, //24 * 5,
+                    height: 24 * 8,
                   }}
                   className="rounded-xl bg-[#F5F5F5] p-3"
                   ref={inputScrollViewRef}
@@ -385,7 +384,7 @@ const QuickNotes = forwardRef(
                         textAlignVertical="top"
                         placeholder="写下你的心得感受..."
                         placeholderTextColor="#999"
-                        className="rounded-xl bg-[#F5F5F5]  text-base leading-6 text-[#333]"
+                        className="rounded-xl bg-[#F5F5F5] text-base leading-6 text-[#333]"
                       />
                     )}
                   />
