@@ -31,16 +31,28 @@ const ImagePickerContext = createContext<ImagePickerContextType>({
 interface ImagePickerProviderProps {
   limit?: number;
   children: React.ReactNode;
+  onImagesChange?: (images: string[], old: string[]) => void;
 }
 
 const ImagePickerProvider = ({
   limit = 1,
   children,
+  onImagesChange,
 }: ImagePickerProviderProps) => {
   const [imageUris, setImageUris] = useState<string[]>([]);
 
+  const handleSetImageUris = (
+    value: string[] | ((prev: string[]) => string[]),
+  ) => {
+    const newUris = typeof value === 'function' ? value(imageUris) : value;
+    onImagesChange?.(newUris, imageUris);
+    setImageUris(newUris);
+  };
+
   return (
-    <ImagePickerContext.Provider value={{ limit, imageUris, setImageUris }}>
+    <ImagePickerContext.Provider
+      value={{ limit, imageUris, setImageUris: handleSetImageUris }}
+    >
       {children}
     </ImagePickerContext.Provider>
   );

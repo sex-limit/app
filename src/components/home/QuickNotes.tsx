@@ -258,6 +258,17 @@ const QuickNotes = forwardRef(
       [currentDate, onConfirm, dismiss],
     );
 
+    const inputScrollViewRef = useRef<ScrollView>(null);
+    const [scrollViewHeight, setScrollViewHeight] = useState<number>(24 * 8);
+    const handleImagePickerChange = useCallback(
+      (images: string[], old: string[]) => {
+        if (images.length > old.length) {
+          inputScrollViewRef.current?.scrollToEnd({ animated: true });
+        }
+      },
+      [],
+    );
+
     return (
       <>
         <Animated.View
@@ -315,7 +326,10 @@ const QuickNotes = forwardRef(
             <View></View>
             {/* Main */}
             <View className="mt-4">
-              <ImagePicker.Provider limit={9}>
+              <ImagePicker.Provider
+                limit={9}
+                onImagesChange={handleImagePickerChange}
+              >
                 <Controller
                   control={control}
                   name="record"
@@ -351,9 +365,10 @@ const QuickNotes = forwardRef(
                 />
                 <ScrollView
                   style={{
-                    height: 24 * 8 + 12 * 2,
+                    height: scrollViewHeight, //24 * 5,
                   }}
                   className="rounded-xl bg-[#F5F5F5] p-3"
+                  ref={inputScrollViewRef}
                 >
                   <Controller
                     control={control}
@@ -370,7 +385,7 @@ const QuickNotes = forwardRef(
                         textAlignVertical="top"
                         placeholder="写下你的心得感受..."
                         placeholderTextColor="#999"
-                        className="rounded-xl bg-[#F5F5F5] p-3 text-base leading-6 text-[#333]"
+                        className="rounded-xl bg-[#F5F5F5]  text-base leading-6 text-[#333]"
                       />
                     )}
                   />
