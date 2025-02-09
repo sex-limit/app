@@ -13,6 +13,7 @@ import {
   Keyboard,
   type LayoutChangeEvent,
   type NativeSyntheticEvent,
+  ScrollView,
   Text,
   type TextInput as NTextInput,
   type TextInputSelectionChangeEventData,
@@ -25,11 +26,13 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
+import Toast from 'react-native-toast-message';
 
 import { type CheckInRecord, type RecordMode } from '@/contexts/CheckInContext';
 import { useKeyboard } from '@/hooks/useKeyboard';
 import { Input } from '@/ui';
 import { EmojiPicker } from '@/ui/emojiPicker';
+import { ImagePicker } from '@/ui/imageUploader';
 import {
   RadioButton,
   RadioButtonGroup,
@@ -202,17 +205,17 @@ const QuickNotes = forwardRef(
 
     const handleBottomSheetLayout = useCallback(
       (event: LayoutChangeEvent) => {
-        if (bottomSheetHeight === null) {
+        if (emojiPickerExpanded === false) {
           setBottomSheetHeight(Math.ceil(event.nativeEvent.layout.height));
         }
       },
-      [bottomSheetHeight],
+      [emojiPickerExpanded],
     );
 
     const snapPoints = useMemo(() => {
       const emojiPickerHeight = emojiPickerExpanded ? 240 : 0;
       return [
-        (bottomSheetHeight ?? 300) +
+        (bottomSheetHeight ?? 380) +
           Math.max(emojiPickerHeight, keyboardHeight) +
           40,
       ];
@@ -312,90 +315,103 @@ const QuickNotes = forwardRef(
             <View></View>
             {/* Main */}
             <View className="mt-4">
-              <Controller
-                control={control}
-                name="record"
-                render={({ field: { onChange, value } }) => (
-                  <>
-                    <RadioButtonGroup
-                      value={value?.mode ?? null}
-                      onChange={(v) => onChange({ mode: v, count: 1 })}
-                      direction="horizontal"
-                      optional={true}
-                    >
-                      <RadioButton
-                        label="戒🦌"
-                        value="limit"
-                        activeColor="#84AB62"
-                        activeTextColor="#ffffff"
-                        color="#F5F5F5"
-                      />
-                      <NumericRadioButton
-                        label="开🦌"
-                        count={value?.count ?? 0}
-                        onCountChange={(v, c) =>
-                          onChange({ mode: v, count: c })
-                        }
-                        value="exhaustive"
-                        activeColor="#84AB62"
-                        activeTextColor="#ffffff"
-                        color="#F5F5F5"
-                      />
-                    </RadioButtonGroup>
-                  </>
-                )}
-              />
-              <Controller
-                control={control}
-                name="note"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    value={value}
-                    onChangeText={onChange}
-                    onSelectionChange={handleSelectionChange}
-                    onBlur={onBlur}
-                    multiline={true}
-                    numberOfLines={8}
-                    ref={inputRef}
-                    textAlignVertical="top"
-                    placeholder="写下你的心得感受..."
-                    placeholderTextColor="#999"
-                    className="min-h-[160px] rounded-xl bg-[#F5F5F5] p-3 text-base leading-6 text-[#333]"
-                  />
-                )}
-              />
-
-              {/* Time Display */}
-              <View className="mt-3 flex-row items-center">
-                <Text className="text-sm text-[#333]">
-                  {currentDate
-                    .toLocaleString('zh-CN', {
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false,
-                    })
-                    .replace(/\//g, '/')}
-                </Text>
-              </View>
-
-              {/* Emoji Picker */}
-              <View className="mt-3">
-                <EmojiPicker.Provider
-                  isExpanded={emojiPickerExpanded}
-                  onEmojiSelected={handleSelectEmoji}
-                  onToggleExpand={handleEmojiPickerToggle}
+              <ImagePicker.Provider limit={9}>
+                <Controller
+                  control={control}
+                  name="record"
+                  render={({ field: { onChange, value } }) => (
+                    <>
+                      <RadioButtonGroup
+                        value={value?.mode ?? null}
+                        onChange={(v) => onChange({ mode: v, count: 1 })}
+                        direction="horizontal"
+                        optional={true}
+                      >
+                        <RadioButton
+                          label="戒🦌"
+                          value="limit"
+                          activeColor="#84AB62"
+                          activeTextColor="#ffffff"
+                          color="#F5F5F5"
+                        />
+                        <NumericRadioButton
+                          label="开🦌"
+                          count={value?.count ?? 0}
+                          onCountChange={(v, c) =>
+                            onChange({ mode: v, count: c })
+                          }
+                          value="exhaustive"
+                          activeColor="#84AB62"
+                          activeTextColor="#ffffff"
+                          color="#F5F5F5"
+                        />
+                      </RadioButtonGroup>
+                    </>
+                  )}
+                />
+                <ScrollView
+                  style={{
+                    height: 24 * 8 + 12 * 2,
+                  }}
+                  className="rounded-xl bg-[#F5F5F5] p-3"
                 >
-                  <View className="flex-row items-center gap-2">
-                    <ImageUpload />
-                    <EmojiPicker.QuickInput />
-                    <EmojiPicker.Toggler />
-                  </View>
-                  <EmojiPicker.Picker emojiSize={24} columns={8} />
-                </EmojiPicker.Provider>
-              </View>
+                  <Controller
+                    control={control}
+                    name="note"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <Input
+                        value={value}
+                        onChangeText={onChange}
+                        onSelectionChange={handleSelectionChange}
+                        onBlur={onBlur}
+                        multiline={true}
+                        numberOfLines={5}
+                        ref={inputRef}
+                        textAlignVertical="top"
+                        placeholder="写下你的心得感受..."
+                        placeholderTextColor="#999"
+                        className="rounded-xl bg-[#F5F5F5] p-3 text-base leading-6 text-[#333]"
+                      />
+                    )}
+                  />
+                  <ImagePicker.Preview />
+                  <View className="mt-6"></View>
+                </ScrollView>
+
+                {/* Time Display */}
+                <View className="mt-3 flex-row items-center">
+                  <Text className="text-sm text-[#333]">
+                    {currentDate
+                      .toLocaleString('zh-CN', {
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                      })
+                      .replace(/\//g, '/')}
+                  </Text>
+                </View>
+
+                {/* Emoji Picker */}
+                <View className="mt-3">
+                  <EmojiPicker.Provider
+                    isExpanded={emojiPickerExpanded}
+                    onEmojiSelected={handleSelectEmoji}
+                    onToggleExpand={handleEmojiPickerToggle}
+                  >
+                    <View className="flex-row items-center gap-2">
+                      {/* <ImagePickerExample /> */}
+                      <ImagePicker.Trigger />
+                      <EmojiPicker.QuickInput />
+                      <EmojiPicker.Toggler />
+                    </View>
+                    <EmojiPicker.Picker emojiSize={24} columns={8} />
+                  </EmojiPicker.Provider>
+                </View>
+              </ImagePicker.Provider>
             </View>
+            <Toast />
           </BottomSheetView>
         </BottomSheetModal>
       </>
@@ -405,14 +421,5 @@ const QuickNotes = forwardRef(
   QuickNotesProps & React.RefAttributes<QuickNotesMethods>
 > &
   QuickNotesMethods;
-
-const ImageUpload = () => {
-  return (
-    <TouchableOpacity className="flex-1 flex-row items-center gap-2">
-      <MaterialCommunityIcons name="image-plus" size={20} color="#666" />
-      <Text className="text-sm text-[#666]">添加图片</Text>
-    </TouchableOpacity>
-  );
-};
 
 export { QuickNotes };
