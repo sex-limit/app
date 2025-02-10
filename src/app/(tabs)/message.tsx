@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
   SafeAreaView,
@@ -6,7 +7,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import { MessageItem } from '@/components/message/message-item';
 
@@ -101,15 +101,13 @@ const MessageScreen = () => {
     <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="flex-row items-center justify-between bg-white px-4 py-2">
-        <Text className="text-2xl font-medium">消息</Text>
-        <View className="flex-row items-center space-x-4">
-          <TouchableOpacity>
-            <Icon name="magnify" size={24} color="#333" />
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Icon name="plus-circle-outline" size={24} color="#333" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity>
+          <Ionicons name="add-circle-outline" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text className="text-xl font-medium">消息</Text>
+        <TouchableOpacity>
+          <Ionicons name="search-outline" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
       {/* Message List */}
