@@ -2,6 +2,8 @@ import React from 'react';
 import { Image, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 
+import { toRelativeDate } from '@/utils/date';
+
 type TouchableReactiveProps = React.ComponentProps<typeof TouchableOpacity> &
   React.ComponentProps<typeof TouchableRipple>;
 
@@ -13,6 +15,15 @@ const TouchableReactive = (props: TouchableReactiveProps) => {
   }
 };
 
+interface MessageItemProps {
+  avatar: string;
+  name: string;
+  message: string;
+  time?: string;
+  unread?: number;
+  online?: boolean;
+}
+
 export const MessageItem = ({
   avatar,
   name,
@@ -20,14 +31,7 @@ export const MessageItem = ({
   time,
   unread,
   online,
-}: {
-  avatar: string;
-  name: string;
-  message: string;
-  time: string;
-  unread?: number;
-  online?: boolean;
-}) => (
+}: MessageItemProps) => (
   <TouchableReactive
     className="flex-row items-center border-b border-gray-100 bg-white px-4 py-3"
     onPress={() => {}}
@@ -44,14 +48,21 @@ export const MessageItem = ({
       </View>
       <View className={'flex-1'}>
         <Text className={'font-bold'}>{name}</Text>
-        <View>
-          <Text ellipsizeMode={'tail'} numberOfLines={1}>
-            {message}
-          </Text>
+        <View className={'flex-row items-center'}>
+          <View className="shrink">
+            <Text ellipsizeMode={'tail'} numberOfLines={1}>
+              {message}
+            </Text>
+          </View>
+          <View className="grow">
+            {time && (
+              <Text numberOfLines={1}>· {toRelativeDate(new Date(time))}</Text>
+            )}
+          </View>
         </View>
       </View>
       {unread && (
-        <View className="h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1">
+        <View className="ml-4 h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1">
           <Text className="text-xs text-white">{unread}</Text>
         </View>
       )}
