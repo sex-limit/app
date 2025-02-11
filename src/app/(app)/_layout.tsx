@@ -13,6 +13,14 @@ export default function TabLayout() {
   return (
     <Stack>
       <Stack.Screen name="plan-detail" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="message-detail/interaction"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="message-detail/index"
+        options={{ headerShown: true }}
+      />
     </Stack>
   );
 }

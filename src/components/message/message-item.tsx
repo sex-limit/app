@@ -1,19 +1,9 @@
 import React from 'react';
-import { Image, Platform, Text, TouchableOpacity, View } from 'react-native';
-import { TouchableRipple } from 'react-native-paper';
+import { Image, Text, View } from 'react-native';
 
 import { toRelativeDate } from '@/utils/date';
 
-type TouchableReactiveProps = React.ComponentProps<typeof TouchableOpacity> &
-  React.ComponentProps<typeof TouchableRipple>;
-
-const TouchableReactive = (props: TouchableReactiveProps) => {
-  if (Platform.OS === 'android') {
-    return <TouchableRipple {...props} />;
-  } else {
-    return <TouchableOpacity activeOpacity={0.75} {...props} />;
-  }
-};
+import { TouchableReactive } from '../touchable-reactive';
 
 interface MessageItemProps {
   avatar: string;
@@ -22,6 +12,7 @@ interface MessageItemProps {
   time?: string;
   unread?: number;
   online?: boolean;
+  onPress?: () => void;
 }
 
 export const MessageItem = ({
@@ -31,10 +22,11 @@ export const MessageItem = ({
   time,
   unread,
   online,
+  onPress,
 }: MessageItemProps) => (
   <TouchableReactive
     className="flex-row items-center border-b border-gray-100 bg-white px-4 py-3"
-    onPress={() => {}}
+    onPress={onPress}
   >
     <>
       <View

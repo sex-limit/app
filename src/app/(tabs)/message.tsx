@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React from 'react';
 import {
   SafeAreaView,
@@ -17,7 +18,6 @@ const MessageScreen = () => {
       type: 'system',
       name: '新关注我的',
       message: '没有新通知',
-      time: '周四',
       avatar: 'https://placekittens.com/200/200',
     },
     {
@@ -25,7 +25,6 @@ const MessageScreen = () => {
       type: 'interaction',
       name: '互动消息',
       message: '欧得芬 r 等 3 人近期访问过你的主页',
-      time: '20:17',
       avatar: 'https://placekittens.com/201/201',
       unread: 1,
     },
@@ -33,8 +32,11 @@ const MessageScreen = () => {
       id: 3,
       type: 'group',
       name: '好哥哥们 💧 52',
-      message: '球子: [分享视频]',
-      time: '58分钟前',
+      message:
+        '球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]球子: [分享视频]',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
       avatar: 'https://placekittens.com/202/202',
       unread: 1,
     },
@@ -43,7 +45,9 @@ const MessageScreen = () => {
       type: 'group',
       name: '可爱爸爸的粉丝群 50',
       message: '64名群成员在线',
-      time: '19:26',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
       avatar: 'https://placekittens.com/203/203',
       online: true,
     },
@@ -52,7 +56,9 @@ const MessageScreen = () => {
       type: 'user',
       name: 'Flechazo 🔥 353',
       message: '活',
-      time: '18:46',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
       avatar: 'https://placekittens.com/204/204',
     },
     {
@@ -60,7 +66,9 @@ const MessageScreen = () => {
       type: 'user',
       name: '板蓝根er',
       message: '坏了，我都忘不懂了',
-      time: '昨天 18:33',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
       avatar: 'https://placekittens.com/205/205',
     },
     {
@@ -68,7 +76,9 @@ const MessageScreen = () => {
       type: 'group',
       name: '415色批小分队',
       message: '今天2个朋友在线',
-      time: '昨天 18:33',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
       avatar: 'https://placekittens.com/206/206',
     },
     {
@@ -76,7 +86,9 @@ const MessageScreen = () => {
       type: 'user',
       name: '小萌新',
       message: '已读 · [分享视频]',
-      time: '前天',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
       avatar: 'https://placekittens.com/207/207',
     },
     {
@@ -84,7 +96,9 @@ const MessageScreen = () => {
       type: 'user',
       name: 'Redemption.',
       message: '已读 · [分享视频]',
-      time: '前天',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
       avatar: 'https://placekittens.com/208/208',
     },
     {
@@ -92,7 +106,9 @@ const MessageScreen = () => {
       type: 'user',
       name: 'Tarth Cleya. (开学住校周末回',
       message: '谢谢！！！',
-      time: '周四',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
       avatar: 'https://placekittens.com/209/209',
     },
   ];
@@ -113,7 +129,21 @@ const MessageScreen = () => {
       {/* Message List */}
       <ScrollView className="flex-1">
         {messages.map((message) => (
-          <MessageItem key={message.id} {...message} />
+          <MessageItem
+            key={message.id}
+            {...message}
+            onPress={() => {
+              const path = (() => {
+                switch (message.type) {
+                  case 'interaction':
+                    return '/message-detail/interaction';
+                  default:
+                    return '/message-detail';
+                }
+              })();
+              router.push(path, {});
+            }}
+          />
         ))}
       </ScrollView>
     </SafeAreaView>
