@@ -123,27 +123,13 @@ export default function Page() {
                   <Text>收到的回复</Text>
                 </View>
               </Dropdown.Item>
-              {/* <Menu.Item
-              onPress={() => {
-                setType('like');
-                closeMenu();
-              }}
-              title="收到的赞"
-            />
-            <Menu.Item
-              onPress={() => {
-                setType('reply');
-                closeMenu();
-              }}
-              title="收到的回复"
-            /> */}
             </Dropdown>
           </View>
           <View style={{ width: 40 }} />
         </View>
 
         <FlashList
-          data={mockData} // TODO: 添加实际数据
+          data={mockData.filter((item) => type === 'all' || item.type === type)}
           renderItem={({ item }) => <InteractionListItem item={item} />}
           estimatedItemSize={80}
           refreshing={refreshing}
