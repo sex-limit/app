@@ -1,25 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
+import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
-import React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 
 import { MessageItem } from '@/components/message/message-item';
 
 const MessageScreen = () => {
   const messages = [
-    {
-      id: 1,
-      type: 'system',
-      name: '新关注我的',
-      message: '没有新通知',
-      avatar: 'https://placekittens.com/200/200',
-    },
     {
       id: 2,
       type: 'interaction',
@@ -111,7 +99,55 @@ const MessageScreen = () => {
       ).toISOString(),
       avatar: 'https://placekittens.com/209/209',
     },
+    {
+      id: 11,
+      type: 'user',
+      name: 'Tarth Cleya. (开学住校周末回',
+      message: '谢谢！！！',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
+      avatar: 'https://placekittens.com/210/210',
+    },
+    {
+      id: 12,
+      type: 'user',
+      name: 'Tarth Cleya. (开学住校周末回',
+      message: '谢谢！！！',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
+      avatar: 'https://placekittens.com/211/211',
+    },
+    {
+      id: 13,
+      type: 'user',
+      name: 'Tarth Cleya. (开学住校周末回',
+      message: '谢谢！！！',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
+      avatar: 'https://placekittens.com/212/212',
+    },
+    {
+      id: 14,
+      type: 'user',
+      name: 'Tarth Cleya. (开学住校周末回',
+      message: '谢谢！！！',
+      time: new Date(
+        Date.now() - Math.floor(Math.random() * 86400000 * 2),
+      ).toISOString(),
+      avatar: 'https://placekittens.com/213/213',
+    },
   ];
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    // TODO: 实现刷新逻辑
+    setTimeout(() => setRefreshing(false), 1000);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -126,15 +162,17 @@ const MessageScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Message List */}
-      <ScrollView className="flex-1">
-        {messages.map((message) => (
+      <FlashList
+        data={messages}
+        keyExtractor={(item) => item.id.toString()}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        renderItem={({ item }) => (
           <MessageItem
-            key={message.id}
-            {...message}
+            {...item}
             onPress={() => {
               const path = (() => {
-                switch (message.type) {
+                switch (item.type) {
                   case 'interaction':
                     return '/message-detail/interaction';
                   default:
@@ -144,8 +182,8 @@ const MessageScreen = () => {
               router.push(path, {});
             }}
           />
-        ))}
-      </ScrollView>
+        )}
+      />
     </SafeAreaView>
   );
 };
