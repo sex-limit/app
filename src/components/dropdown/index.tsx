@@ -144,7 +144,6 @@ const Dropdown = ({
   const onLayout = () => {
     // eslint-disable-next-line max-params
     anchorRef.current?.measureInWindow((x, y, width, height) => {
-      console.log('measureInWindow', { x, y, width, height });
       anchorLayoutRef.current = { width, height, x, y };
     });
   };
