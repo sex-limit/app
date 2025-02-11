@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
-import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, Text, View } from 'react-native';
 
 import Dropdown, { DropdownProvider } from '@/components/dropdown';
 import { InteractionListItem } from '@/components/interaction/interaction-item';
+import { PageHeader } from '@/components/page-header';
 
 export type InteractionType = 'like' | 'reply' | 'all';
 
@@ -82,13 +82,10 @@ export default function Page() {
   };
 
   return (
-    <DropdownProvider>
-      <View className="flex-1 bg-white">
-        <View className="flex-row items-center border-b border-gray-200 bg-white px-4 py-3">
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={24} color="black" />
-          </TouchableOpacity>
-          <View className="flex-1 items-center">
+    <SafeAreaView className={'flex h-screen flex-1 flex-col bg-white'}>
+      <DropdownProvider>
+        <PageHeader
+          center={
             <Dropdown
               anchor={
                 <Text>
@@ -124,9 +121,8 @@ export default function Page() {
                 </View>
               </Dropdown.Item>
             </Dropdown>
-          </View>
-          <View style={{ width: 40 }} />
-        </View>
+          }
+        />
 
         <FlashList
           data={mockData.filter((item) => type === 'all' || item.type === type)}
@@ -135,7 +131,7 @@ export default function Page() {
           refreshing={refreshing}
           onRefresh={handleRefresh}
         />
-      </View>
-    </DropdownProvider>
+      </DropdownProvider>
+    </SafeAreaView>
   );
 }
