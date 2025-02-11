@@ -40,7 +40,7 @@ export const PageHeader = ({
 }: PageHeaderProps) => {
   return (
     <View
-      className="flex-row items-center border-b border-gray-200 bg-white px-4 py-3"
+      className="flex-row items-center gap-2 border-b border-gray-200 bg-white px-4 py-3"
       style={[
         {
           height,
@@ -48,7 +48,7 @@ export const PageHeader = ({
         headerStyle,
       ]}
     >
-      <View className="flex-1 items-start">
+      <View className="grow basis-1 items-start">
         {left ||
           (back && (
             <TouchableOpacity onPress={() => router.back()}>
@@ -56,10 +56,14 @@ export const PageHeader = ({
             </TouchableOpacity>
           ))}
       </View>
-      <View className="flex-1 items-center">
-        {center || <Text>{title}</Text>}
+      <View className="shrink items-center">
+        {center || (
+          <Text className="text-md" ellipsizeMode="tail" numberOfLines={1}>
+            {title}
+          </Text>
+        )}
       </View>
-      <View className="flex-1 items-end">{right}</View>
+      <View className="grow basis-1 items-end">{right}</View>
     </View>
   );
 };

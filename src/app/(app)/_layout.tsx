@@ -18,8 +18,8 @@ export default function TabLayout() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="message-detail/index"
-        options={{ headerShown: true }}
+        name="message-detail/[type]/[id]"
+        options={{ headerShown: false }}
       />
     </Stack>
   );
