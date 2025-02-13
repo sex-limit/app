@@ -1,19 +1,9 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Dimensions,
-  PanResponder,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
   runOnJS,
-  useAnimatedReaction,
   useAnimatedStyle,
-  useDerivedValue,
   useSharedValue,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -21,6 +11,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { type CheckInRecord } from '@/contexts/CheckInContext';
 import { getDaysInMonth } from '@/utils/date';
 
+import { CarouselSwitch } from './CarouselSwith';
 import { MonthCalendar } from './MonthCalendar';
 
 interface YearCalendarProps {
@@ -274,171 +265,6 @@ const MonthPicker = memo(
   },
 );
 
-const ThreeMonthViewPanel = memo(
-  ({
-    panDate,
-    checkedDays,
-  }: {
-    panDate: { year: number; month: number };
-    checkedDays: Map<string, CheckInRecord>;
-  }) => {
-    const prevMonth = panDate.month === 0 ? 11 : panDate.month - 1;
-    const nextMonth = panDate.month === 11 ? 0 : panDate.month + 1;
-    const prevYear = panDate.month === 0 ? panDate.year - 1 : panDate.year;
-    const nextYear = panDate.month === 11 ? panDate.year + 1 : panDate.year;
-    const emptySet = useRef(new Map<string, CheckInRecord>());
-    const idle = useRef(() => {});
-    return (
-      <>
-        <View style={{ width: '33.33%' }}>
-          <MonthCalendar
-            year={prevYear}
-            month={prevMonth}
-            checkedDays={emptySet.current}
-            onToggleDay={idle.current}
-          />
-        </View>
-        <View style={{ width: '33.33%' }}>
-          <MonthCalendar
-            year={panDate.year}
-            month={panDate.month}
-            checkedDays={checkedDays}
-            onToggleDay={idle.current}
-          />
-        </View>
-        <View style={{ width: '33.33%' }}>
-          <MonthCalendar
-            year={nextYear}
-            month={nextMonth}
-            checkedDays={emptySet.current}
-            onToggleDay={idle.current}
-          />
-        </View>
-      </>
-    );
-  },
-);
-
-const MonthViewSwitcher = memo(
-  ({
-    checkedDays,
-    onToggleDay,
-    gotoPrevMonth,
-    gotoNextMonth,
-    monthViewTranslateX,
-    year,
-    month,
-  }: {
-    checkedDays: Map<string, CheckInRecord>;
-    onToggleDay: (day: number) => void;
-    gotoPrevMonth: () => void;
-    gotoNextMonth: () => void;
-    monthViewTranslateX: any;
-    year: number;
-    month: number;
-  }) => {
-    // There are (3+1) `calendars` in the view,
-    // the first three are previous, current and next month calendars that show in the swiping effect,
-    // and the last one is the current month calendar that shows in the normal state.
-
-    const swiping = useDerivedValue(() => {
-      return monthViewTranslateX.value !== 0;
-    });
-    const [panDate, setPanDate] = useState({ year, month });
-
-    const updatePan = useCallback(() => {
-      requestAnimationFrame(() => {
-        setPanDate({ year, month });
-      });
-    }, [year, month]);
-
-    useAnimatedReaction(
-      () => swiping.value,
-      (visible) => {
-        if (!visible && (panDate.year !== year || panDate.month !== month)) {
-          runOnJS(updatePan)();
-        }
-      },
-    );
-
-    const calendarOpacityStyle = useAnimatedStyle(() => {
-      return {
-        opacity: swiping.value ? 0 : 1,
-      };
-    });
-
-    const animatedMonthViewStyle = useAnimatedStyle(() => {
-      return {
-        transform: [{ translateX: monthViewTranslateX.value }],
-        opacity: monthViewTranslateX.value !== 0 ? 1 : 0,
-      };
-    });
-
-    const panResponder = PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        monthViewTranslateX.value = gestureState.dx;
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx > 50) {
-          gotoPrevMonth();
-        } else if (gestureState.dx < -50) {
-          gotoNextMonth();
-        } else {
-          monthViewTranslateX.value = withSpring(0);
-        }
-      },
-      onPanResponderTerminate: () => {
-        monthViewTranslateX.value = withSpring(0);
-      },
-    });
-
-    const [panCheckedDays, setPanCheckedDays] = useState(checkedDays);
-
-    useEffect(() => {
-      // As the swiping animation is not visible when we update the checkedDays state,
-      // here i delay the child component's state update to avoid blocking the thread.
-      setTimeout(() => {
-        setPanCheckedDays(checkedDays);
-      }, 0);
-    }, [checkedDays]);
-
-    return (
-      <View className=" min-h-[340px] overflow-hidden">
-        <Animated.View
-          className="w-full"
-          style={[calendarOpacityStyle]}
-          {...panResponder.panHandlers}
-        >
-          <MonthCalendar
-            year={year}
-            month={month}
-            checkedDays={checkedDays}
-            onToggleDay={onToggleDay}
-          />
-        </Animated.View>
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              flexDirection: 'row',
-              width: '300%',
-              marginLeft: '-100%',
-              pointerEvents: 'none',
-            },
-            // swipeOpacityStyle,
-            animatedMonthViewStyle,
-          ]}
-        >
-          <ThreeMonthViewPanel panDate={panDate} checkedDays={panCheckedDays} />
-        </Animated.View>
-      </View>
-    );
-  },
-);
-
 const StatsRow = ({ checkedDays, year, month }: any) => (
   <View className="mt-8 flex-row justify-between">
     <View>
@@ -475,9 +301,6 @@ export const YearCalendar = ({
   checkedDays,
   onToggleDay,
 }: YearCalendarProps) => {
-  const displayWidth = Dimensions.get('window').width - 56;
-  const monthViewTranslateX = useSharedValue(0);
-
   const selectedYear = useRef(year);
   const selectedMonth = useRef(month);
 
@@ -497,31 +320,21 @@ export const YearCalendar = ({
     [onJumpTo],
   );
 
-  useEffect(() => {
-    monthViewTranslateX.value = 0;
-  }, [monthViewTranslateX, year, month]);
-
-  const gotoPrevMonth = useCallback(() => {
-    monthViewTranslateX.value = withTiming(
-      displayWidth,
-      { duration: 200 },
-      () => {},
-    );
-    runOnJS(onPrevMonth)();
-  }, [displayWidth, monthViewTranslateX, onPrevMonth]);
-
-  const gotoNextMonth = useCallback(() => {
-    monthViewTranslateX.value = withTiming(
-      -displayWidth,
-      { duration: 200 },
-      () => {},
-    );
-    runOnJS(onNextMonth)();
-  }, [displayWidth, monthViewTranslateX, onNextMonth]);
-
   const handleCancel = useCallback(() => {
     setMonthPickerVisible(false);
   }, [setMonthPickerVisible]);
+
+  // const [current, setCurrent] = useState(new Date(year, month, 1));
+  const current = new Date(year, month, 1);
+
+  const handleSetCurrent = useCallback(
+    (current: Date) => {
+      console.log('current', current);
+      // setCurrent(current);
+      onJumpTo(current.getFullYear(), current.getMonth());
+    },
+    [onJumpTo],
+  );
 
   return (
     <View className="w-full ">
@@ -530,18 +343,32 @@ export const YearCalendar = ({
         month={month}
         toggleMonthPicker={toggleMonthPicker}
         monthPickerVisible={monthPickerVisible}
-        gotoPrevMonth={gotoPrevMonth}
-        gotoNextMonth={gotoNextMonth}
+        gotoPrevMonth={onPrevMonth}
+        gotoNextMonth={onNextMonth}
       />
 
-      <MonthViewSwitcher
-        checkedDays={checkedDays}
-        onToggleDay={onToggleDay}
-        gotoPrevMonth={gotoPrevMonth}
-        gotoNextMonth={gotoNextMonth}
-        monthViewTranslateX={monthViewTranslateX}
-        year={year}
-        month={month}
+      <CarouselSwitch
+        current={current}
+        getPrev={(current) =>
+          new Date(current.getFullYear(), current.getMonth() - 1, 1)
+        }
+        getNext={(current) =>
+          new Date(current.getFullYear(), current.getMonth() + 1, 1)
+        }
+        onChange={(current) => handleSetCurrent(current)}
+        RenderItem={({ item: current, active }) => {
+          console.log('MonthCalendar called 0 at', new Date());
+
+          return (
+            <MonthCalendar
+              year={current.getFullYear()}
+              month={current.getMonth()}
+              checkedDays={active ? checkedDays : undefined}
+              // checkedDays={undefined}
+              onToggleDay={onToggleDay}
+            />
+          );
+        }}
       />
 
       <MonthPicker
