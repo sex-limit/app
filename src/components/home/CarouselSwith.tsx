@@ -12,8 +12,11 @@ import {
 
 import { deferred } from '@/utils/deferred';
 
+import { DropdownProvider } from '../dropdown';
+
 interface CarouselSwitchProps<T> {
   current: T;
+  picker?: React.ReactNode;
   RenderItem: (props: { item: T; active: boolean }) => React.ReactNode;
   getPrev: (current: T) => T;
   getNext: (current: T) => T;
@@ -22,6 +25,7 @@ interface CarouselSwitchProps<T> {
 
 export const CarouselSwitch = <T,>({
   current,
+  picker,
   RenderItem,
   getPrev,
   getNext,
@@ -111,29 +115,39 @@ export const CarouselSwitch = <T,>({
 
   return (
     <View>
-      {/* <CarouselSwitchArrow onPrev={handleGotoPrev} onNext={handleGotoNext} /> */}
-      <View className="overflow-hidden">
-        <Animated.View
-          style={{
-            width: '300%',
-            flexDirection: 'row',
-            marginLeft: '-100%',
-            transform: [{ translateX: monthViewTranslateX }],
-          }}
-          {...panResponder.panHandlers}
-          onLayout={handleCarouselContainerLayout}
-        >
-          <View style={{ width: '33.33%' }}>
-            <DeferredItem item={prev} active={false} />
-          </View>
-          <View style={{ width: '33.33%' }}>
-            <RenderItem item={current} active={true} />
-          </View>
-          <View style={{ width: '33.33%' }}>
-            <DeferredItem item={next} active={false} />
-          </View>
-        </Animated.View>
-      </View>
+      <DropdownProvider
+        style={{ height: 340, width: '100%', backgroundColor: 'white' }}
+      >
+        <View className="flex-row items-center justify-between p-0">
+          {picker}
+          <CarouselSwitchArrow
+            onPrev={handleGotoPrev}
+            onNext={handleGotoNext}
+          />
+        </View>
+        <View className="overflow-hidden">
+          <Animated.View
+            style={{
+              width: '300%',
+              flexDirection: 'row',
+              marginLeft: '-100%',
+              transform: [{ translateX: monthViewTranslateX }],
+            }}
+            {...panResponder.panHandlers}
+            onLayout={handleCarouselContainerLayout}
+          >
+            <View style={{ width: '33.33%' }}>
+              <DeferredItem item={prev} active={false} />
+            </View>
+            <View style={{ width: '33.33%' }}>
+              <RenderItem item={current} active={true} />
+            </View>
+            <View style={{ width: '33.33%' }}>
+              <DeferredItem item={next} active={false} />
+            </View>
+          </Animated.View>
+        </View>
+      </DropdownProvider>
     </View>
   );
 };

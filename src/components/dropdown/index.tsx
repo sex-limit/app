@@ -3,9 +3,11 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   type LayoutChangeEvent,
   type LayoutRectangle,
+  StyleProp,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  ViewStyle,
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -19,17 +21,18 @@ interface DropdownContextType {
   clear: () => void;
 }
 
-const DropdownContext = React.createContext<DropdownContextType>({
+export const DropdownContext = React.createContext<DropdownContextType>({
   visible: false,
   trigger: () => {},
   clear: () => {},
 });
 
 interface DropdownProviderProps {
+  style?: ViewStyle;
   children: React.ReactNode;
 }
 
-const DropdownProvider = ({ children }: DropdownProviderProps) => {
+const DropdownProvider = ({ style, children }: DropdownProviderProps) => {
   const [visible, setVisible] = useState(false);
   const [items, setItems] = useState<React.ReactNode[]>([]);
   const anchorLayoutRef = useRef<LayoutRectangle | null>(null);
@@ -100,14 +103,14 @@ const DropdownProvider = ({ children }: DropdownProviderProps) => {
       }}
     >
       {visible && (
-        <View className="absolute left-0 top-0 z-10 h-screen w-screen">
+        <View className="absolute left-0 top-0 z-10 h-full w-full">
           <View
-            className="absolute left-0 top-0 h-screen w-screen"
+            className="absolute left-0 top-0 h-full w-full"
             onTouchEnd={clear}
           />
           <Animated.View
             className="absolute left-0 top-0 border border-gray-100"
-            style={[translateStyle]}
+            style={[style, translateStyle]}
             onLayout={handleItemsLayout}
           >
             {items.map((item, index) => (
