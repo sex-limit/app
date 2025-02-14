@@ -56,8 +56,6 @@ export const YearCalendar = ({
 
   const handleSetCurrent = useCallback(
     (current: Date) => {
-      console.log('current', current);
-      // setCurrent(current);
       onJumpTo(current.getFullYear(), current.getMonth());
     },
     [onJumpTo],
@@ -82,8 +80,6 @@ export const YearCalendar = ({
           />
         }
         RenderItem={({ item: current, active }) => {
-          console.log('MonthCalendar called 0 at', new Date());
-
           return (
             <MonthCalendar
               year={current.getFullYear()}

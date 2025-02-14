@@ -428,7 +428,6 @@ const WeekPicker = ({ value, onChange }: DatePickerBaseProps) => {
   const days = getDaysInMonth(month.getFullYear(), month.getMonth());
   const firstWeekday =
     (getFirstDayOfMonth(month.getFullYear(), month.getMonth()) + 6) % 7;
-  console.log('🚀 > WeekPicker > firstWeekday:', firstWeekday);
 
   const paddingStart = firstWeekday;
   const paddingEnd = 7 - (((days + paddingStart - 1) % 7) + 1);
@@ -440,7 +439,6 @@ const WeekPicker = ({ value, onChange }: DatePickerBaseProps) => {
     (_, i) =>
       new Date(month.getFullYear(), month.getMonth(), 7 * i - paddingStart + 1),
   );
-  console.log('🚀 > WeekPicker > candidates:', candidates);
 
   const handlePrev = () => {
     setMonth(prev(month, 'month'));

@@ -3,11 +3,10 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   type LayoutChangeEvent,
   type LayoutRectangle,
-  StyleProp,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-  ViewStyle,
+  type ViewStyle,
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,

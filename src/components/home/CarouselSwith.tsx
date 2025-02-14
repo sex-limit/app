@@ -58,7 +58,6 @@ export const CarouselSwitch = <T,>({
           duration: 200,
           useNativeDriver: true,
         }).start(() => {
-          console.log('Trigger prev at', new Date());
           onChange(prev);
           monthViewTranslateX.setValue(0);
         });
@@ -68,7 +67,6 @@ export const CarouselSwitch = <T,>({
           duration: 200,
           useNativeDriver: true,
         }).start(() => {
-          console.log('Trigger next at', new Date());
           onChange(next);
           monthViewTranslateX.setValue(0);
         });
