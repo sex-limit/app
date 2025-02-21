@@ -72,6 +72,7 @@
     "react-native-calendars": "^1.1307.0",
     "react-native-flash-message": "^0.4.2",
     "react-native-gesture-handler": "~2.20.2",
+    "react-native-image-picker": "^8.0.0",
     "react-native-keyboard-controller": "^1.13.2",
     "react-native-mmkv": "~2.12.2",
     "react-native-pager-view": "^6.6.1",

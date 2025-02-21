@@ -5,7 +5,7 @@ export const showToast = {
     Toast.show({
       type: 'loading',
       text1: message,
-      position: 'center',
+      position: 'bottom',
       autoHide: false,
     });
   },
@@ -13,7 +13,7 @@ export const showToast = {
     Toast.show({
       type: 'success',
       text1: message,
-      position: 'center',
+      position: 'bottom',
       visibilityTime: 2000,
     });
   },
@@ -21,7 +21,7 @@ export const showToast = {
     Toast.show({
       type: 'error',
       text1: message,
-      position: 'center',
+      position: 'bottom',
       visibilityTime: 2000,
     });
   },
