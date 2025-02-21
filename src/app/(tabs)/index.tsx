@@ -90,7 +90,7 @@ export default function Home() {
     [currentDate.year, currentDate.month, checkedDays, handleQuickNotes],
   );
 
-  const handleQuickNotesClose = useCallback(() => {}, []);
+  const handleQuickNotesClose = useCallback(() => { }, []);
 
   const handleQuickNotesConfirm = useCallback(
     (note: NoteData, date: Date) => {
@@ -121,7 +121,7 @@ export default function Home() {
             {/* Profile Section */}
             <View className="items-center gap-y-6 py-4">
               <Image
-                source={{uri: 'https://sns-webpic-qc.xhscdn.com/202502051403/b3152fccf01f310f28a8072e260eee94/1040g008318l1tgj1466g5n9g8fgk6cpklpnjo5o!nd_dft_wlteh_webp_3'}}
+                source={{ uri: 'https://sns-webpic-qc.xhscdn.com/202502141633/f274888dc09175ab4a4df7859fa4d38c/1040g008318l1tgj1466g5n9g8fgk6cpklpnjo5o!nd_dft_wlteh_webp_3' }}
                 className="h-24 w-24 rounded-xl"
               />
               <Text className="text-2xl font-medium text-white">六年之约</Text>

@@ -35,7 +35,9 @@ export default function Login() {
           </View>
 
           <View className={'flex flex-row justify-center gap-x-4 pb-12'}>
-            {platform === 'ios' && <AppleLogin />}
+            {Platform.select({
+              ios: <AppleLogin />,
+            })}
 
             <TouchableOpacity className={'items-center'}>
               <View

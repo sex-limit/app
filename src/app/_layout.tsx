@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
@@ -41,21 +42,23 @@ function Providers({ children }: { children: React.ReactNode }) {
       style={styles.container}
       className={theme.dark ? `dark` : undefined}
     >
-      <SafeAreaProvider>
-        <KeyboardProvider>
-          <ThemeProvider value={theme}>
-            <APIProvider>
-              <BottomSheetModalProvider>
-                <CheckInProvider>
-                  <FocusAwareStatusBar translucent={true} />
-                  {children}
-                  <Toast />
-                </CheckInProvider>
-              </BottomSheetModalProvider>
-            </APIProvider>
-          </ThemeProvider>
-        </KeyboardProvider>
-      </SafeAreaProvider>
+      <PaperProvider>
+        <SafeAreaProvider>
+          <KeyboardProvider>
+            <ThemeProvider value={theme}>
+              <APIProvider>
+                <BottomSheetModalProvider>
+                  <CheckInProvider>
+                    <FocusAwareStatusBar translucent={true} />
+                    {children}
+                    <Toast />
+                  </CheckInProvider>
+                </BottomSheetModalProvider>
+              </APIProvider>
+            </ThemeProvider>
+          </KeyboardProvider>
+        </SafeAreaProvider>
+      </PaperProvider>
     </GestureHandlerRootView>
   );
 }
