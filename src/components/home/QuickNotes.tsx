@@ -3,7 +3,6 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import React, {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -28,6 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { type CheckInRecord, type RecordMode } from '@/contexts/CheckInContext';
+import { useKeyboard } from '@/hooks/useKeyboard';
 import { Input } from '@/ui';
 import { EmojiPicker } from '@/ui/emojiPicker';
 import {
@@ -182,7 +182,20 @@ const QuickNotes = forwardRef(
     }));
 
     const [emojiPickerExpanded, setEmojiPickerExpanded] = useState(false);
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    const handleEmojiPickerToggle = useCallback((expanded: boolean) => {
+      if (expanded) {
+        Keyboard.dismiss();
+      }
+      setEmojiPickerExpanded(expanded);
+    }, []);
+
+    const handleKeyboardShow = useCallback(() => {
+      handleEmojiPickerToggle(false);
+    }, [handleEmojiPickerToggle]);
+
+    const { keyboardHeight } = useKeyboard(handleKeyboardShow);
+
     const [bottomSheetHeight, setBottomSheetHeight] = useState<number | null>(
       null,
     );
@@ -190,9 +203,7 @@ const QuickNotes = forwardRef(
     const handleBottomSheetLayout = useCallback(
       (event: LayoutChangeEvent) => {
         if (bottomSheetHeight === null) {
-          setBottomSheetHeight(
-            Math.ceil(event.nativeEvent.layout.height) - 240,
-          );
+          setBottomSheetHeight(Math.ceil(event.nativeEvent.layout.height));
         }
       },
       [bottomSheetHeight],
@@ -206,40 +217,6 @@ const QuickNotes = forwardRef(
           40,
       ];
     }, [bottomSheetHeight, emojiPickerExpanded, keyboardHeight]);
-
-    const handleEmojiPickerToggle = useCallback((expanded: boolean) => {
-      if (expanded) {
-        Keyboard.dismiss();
-      }
-      setEmojiPickerExpanded(expanded);
-    }, []);
-
-    useEffect(() => {
-      const keyboardWillShow = () => {
-        let metrics = Keyboard.metrics();
-        handleEmojiPickerToggle(false);
-        if (!metrics) {
-          setKeyboardHeight(240);
-        } else {
-          setKeyboardHeight(metrics.height);
-        }
-      };
-      const keyboardWillHide = () => {
-        setKeyboardHeight(0);
-      };
-      const showSubscription = Keyboard.addListener(
-        'keyboardDidShow',
-        keyboardWillShow,
-      );
-      const hideSubscription = Keyboard.addListener(
-        'keyboardDidHide',
-        keyboardWillHide,
-      );
-      return () => {
-        showSubscription.remove();
-        hideSubscription.remove();
-      };
-    }, [handleEmojiPickerToggle]);
 
     const selection = useRef({ start: 0, end: 0 });
     const inputRef = useRef<NTextInput>(null);
@@ -405,18 +382,18 @@ const QuickNotes = forwardRef(
 
               {/* Emoji Picker */}
               <View className="mt-3">
-                <EmojiPicker
+                <EmojiPicker.Provider
                   isExpanded={emojiPickerExpanded}
-                  onToggleExpand={handleEmojiPickerToggle}
-                  ActionBarLeft={ImageUpload}
                   onEmojiSelected={handleSelectEmoji}
-                  emojiSize={24}
-                  style={{
-                    backgroundColor: '#F5F5F5',
-                    borderRadius: 12,
-                    padding: 8,
-                  }}
-                />
+                  onToggleExpand={handleEmojiPickerToggle}
+                >
+                  <View className="flex-row items-center gap-2">
+                    <ImageUpload />
+                    <EmojiPicker.QuickInput />
+                    <EmojiPicker.Toggler />
+                  </View>
+                  <EmojiPicker.Picker emojiSize={24} columns={8} />
+                </EmojiPicker.Provider>
               </View>
             </View>
           </BottomSheetView>
