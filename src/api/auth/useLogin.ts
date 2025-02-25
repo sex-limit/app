@@ -1,17 +1,20 @@
 import { type AxiosError } from 'axios';
 import { createMutation } from 'react-query-kit';
 
-import { client } from '../common';
+import { client, AuthSymbol } from '../common';
 
-export enum LoginType {
-  APPLE = 'apple',
-  GOOGLE = 'phone',
-  TIKTOK = 'tiktok',
+export enum AuthType {
+  Apple,
+  Phone,
+  Douyin,
 }
 
 type Variables = {
-  loginType: LoginType;
-  apple?: any;
+  type: AuthType;
+  apple?: {
+    identityToken: string;
+    realUserStatus: number;
+  };
   tiktok?: any;
   phone?: {
     phone: string;
@@ -29,5 +32,8 @@ export const useLogin = createMutation<Response, Variables, AxiosError>({
       url: '/auth/login',
       method: 'POST',
       data: variables,
-    }).then((response) => response.data),
+      headers: {
+        [AuthSymbol]: true,
+      },
+    }),
 });

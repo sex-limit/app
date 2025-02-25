@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 
-import { LoginType, useLogin } from '@/api/auth/useLogin';
+import { AuthType, useLogin } from '@/api/auth/useLogin';
 import { useAuth } from '@/core/auth';
 import { Text } from '@/ui';
 import { Icons } from '@/ui/icons/icons';
@@ -15,7 +15,7 @@ export const AppleLogin = () => {
   const loginMutation = useLogin({
     onSuccess: (data) => {
       signIn({
-        token: data?.token,
+        token: (data as any)?.data?.token,
       });
       router.push('/(tabs)');
     },
@@ -38,8 +38,11 @@ export const AppleLogin = () => {
       }
 
       loginMutation.mutate({
-        loginType: LoginType.APPLE,
-        apple: credential,
+        type: AuthType.Apple,
+        apple: {
+          identityToken: credential.identityToken,
+          realUserStatus: credential.realUserStatus,
+        },
       });
     } catch (error: any) {
       if (error.code === 'ERR_CANCELED') {

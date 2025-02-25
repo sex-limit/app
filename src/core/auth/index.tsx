@@ -43,3 +43,4 @@ export const useAuth = createSelectors(_useAuth);
 export const signOut = () => _useAuth.getState().signOut();
 export const signIn = (token: TokenType) => _useAuth.getState().signIn(token);
 export const hydrateAuth = () => _useAuth.getState().hydrate();
+export const getAuthToken = () => _useAuth.getState().token;

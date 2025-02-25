@@ -96,5 +96,10 @@ module.exports = {
       files: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
       extends: ['plugin:testing-library/react'],
     },
+    {
+      rules: {
+        '@typescript-eslint/no-empty-object-type': 'off',
+      },
+    },
   ],
 };

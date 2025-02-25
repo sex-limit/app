@@ -8,14 +8,19 @@ import { type NoteData, QuickNotes } from '@/components/home/QuickNotes';
 import { StatCard } from '@/components/home/StatCard';
 import { YearCalendar } from '@/components/home/YearCalendar';
 import { type RecordMode, useCheckIn } from '@/contexts/CheckInContext';
+import { useMySexLimitPlanDetail } from '@/api/plan/usePlanDetail';
 
 export default function Home() {
+  const { data } = useMySexLimitPlanDetail();
+
   const today = new Date();
+
   const { setRecord, getBetween, deleteRecord } = useCheckIn();
   const [currentDate, setCurrentDate] = useState({
     year: today.getFullYear(),
     month: today.getMonth(),
   });
+
   const checkedDays = useMemo(() => {
     return new Map(
       getBetween(
@@ -90,7 +95,7 @@ export default function Home() {
     [currentDate.year, currentDate.month, checkedDays, handleQuickNotes],
   );
 
-  const handleQuickNotesClose = useCallback(() => { }, []);
+  const handleQuickNotesClose = useCallback(() => {}, []);
 
   const handleQuickNotesConfirm = useCallback(
     (note: NoteData, date: Date) => {
@@ -121,7 +126,9 @@ export default function Home() {
             {/* Profile Section */}
             <View className="items-center gap-y-6 py-4">
               <Image
-                source={{ uri: 'https://sns-webpic-qc.xhscdn.com/202502141633/f274888dc09175ab4a4df7859fa4d38c/1040g008318l1tgj1466g5n9g8fgk6cpklpnjo5o!nd_dft_wlteh_webp_3' }}
+                source={{
+                  uri: 'https://sns-webpic-qc.xhscdn.com/202502141633/f274888dc09175ab4a4df7859fa4d38c/1040g008318l1tgj1466g5n9g8fgk6cpklpnjo5o!nd_dft_wlteh_webp_3',
+                }}
                 className="h-24 w-24 rounded-xl"
               />
               <Text className="text-2xl font-medium text-white">六年之约</Text>
@@ -131,7 +138,10 @@ export default function Home() {
                   { icon: 'check-circle', text: '坚持戒涩60天' },
                   { icon: 'clock-outline', text: '今天已记录' },
                 ].map((item, index) => (
-                  <View key={index} className="flex-row items-center rounded-lg bg-white/20 px-3 py-1.5">
+                  <View
+                    key={index}
+                    className="flex-row items-center rounded-lg bg-white/20 px-3 py-1.5"
+                  >
                     <MaterialCommunityIcons
                       name={item.icon}
                       size={12}
