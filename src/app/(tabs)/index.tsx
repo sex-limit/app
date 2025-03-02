@@ -1,6 +1,12 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,11 +15,12 @@ import { StatCard } from '@/components/home/StatCard';
 import { YearCalendar } from '@/components/home/YearCalendar';
 import { type RecordMode, useCheckIn } from '@/contexts/CheckInContext';
 import { useMySexLimitPlanDetail } from '@/api/plan/usePlanDetail';
+import { useMyPlanCheckedDays } from '@/api/plan/usePlanChecked';
+import { client } from '@/api';
 
 export default function Home() {
-  const { data } = useMySexLimitPlanDetail();
-
   const today = new Date();
+  const [planId, setPlanId] = useState('1');
 
   const { setRecord, getBetween, deleteRecord } = useCheckIn();
   const [currentDate, setCurrentDate] = useState({
@@ -21,14 +28,51 @@ export default function Home() {
     month: today.getMonth(),
   });
 
-  const checkedDays = useMemo(() => {
-    return new Map(
-      getBetween(
+  const { data } = useMyPlanCheckedDays({
+    planId: planId,
+    year: currentDate.year,
+  });
+  const planDetail = data?.data;
+
+  const todayChecked = useMemo(() => {
+    return planDetail?.checkedDays.find(
+      (d) =>
+        new Date(d).getFullYear() === today.getFullYear() &&
+        new Date(d).getMonth() === today.getMonth() &&
+        new Date(d).getDate() === today.getDate(),
+    );
+  }, [planDetail, currentDate.year, currentDate.month, today.getDate]);
+
+  const [checkedDays, setCheckedDays] = useState(new Map<string, any>());
+
+  useEffect(() => {
+    const getter = async () => {
+      const data = await getBetween(
+        planId,
         new Date(Date.UTC(currentDate.year, currentDate.month, 1)),
         new Date(Date.UTC(currentDate.year, currentDate.month + 1, 0)),
-      ).map((d) => [d.date.toISOString(), d]),
-    );
-  }, [currentDate, getBetween]);
+      );
+      setCheckedDays(new Map(data.map((d) => [d.date.toISOString(), d])));
+    };
+    getter();
+  }, [currentDate]);
+
+  const [lastWeekCheckedCount, setLastWeekCheckedCount] = useState(0);
+
+  useEffect(() => {
+    const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const getter = async () => {
+      const lastWeekChecked = await getBetween(
+        planId,
+        lastWeek,
+        new Date(Date.now()),
+      );
+      setLastWeekCheckedCount(
+        lastWeekChecked.reduce((acc, cur) => acc + (cur.record?.count ?? 1), 0),
+      );
+    };
+    getter();
+  }, [getBetween]);
 
   const handlePrevMonth = useCallback(() => {
     let year = currentDate.year;
@@ -87,7 +131,7 @@ export default function Home() {
       const record = checkedDays.get(date.toISOString());
       handleQuickNotes(
         date,
-        record?.record.mode ?? 'limit',
+        record?.record.mode ?? 'Positive',
         record?.note ?? '',
         record?.record.count ?? null,
       );
@@ -98,14 +142,43 @@ export default function Home() {
   const handleQuickNotesClose = useCallback(() => {}, []);
 
   const handleQuickNotesConfirm = useCallback(
-    (note: NoteData, date: Date) => {
+    async (note: NoteData, date: Date) => {
+      await client({
+        method: 'POST',
+        url: `/plan/check-in`,
+        data: {
+          planId,
+          checkTimes: note.record === null ? 0 : (note.record.count ?? 1),
+          status: note.record?.mode ?? 'Positive',
+          date: date.toISOString(),
+          quickPost: {
+            content: note.note,
+            imgs: [],
+          },
+        },
+      });
+
       if (note.record === null) {
         deleteRecord(date);
+        setCheckedDays((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(date.toISOString());
+          return newMap;
+        });
       } else {
         setRecord({
           date,
           record: note.record,
           note: note.note,
+        });
+        setCheckedDays((prev) => {
+          const newMap = new Map(prev);
+          newMap.set(date.toISOString(), {
+            date,
+            record: note.record,
+            note: note.note,
+          });
+          return newMap;
         });
       }
     },
@@ -127,16 +200,27 @@ export default function Home() {
             <View className="items-center gap-y-6 py-4">
               <Image
                 source={{
-                  uri: 'https://sns-webpic-qc.xhscdn.com/202502141633/f274888dc09175ab4a4df7859fa4d38c/1040g008318l1tgj1466g5n9g8fgk6cpklpnjo5o!nd_dft_wlteh_webp_3',
+                  uri: planDetail?.coverAvatar,
                 }}
                 className="h-24 w-24 rounded-xl"
               />
-              <Text className="text-2xl font-medium text-white">六年之约</Text>
+              <Text className="text-2xl font-medium text-white">
+                {planDetail?.title}
+              </Text>
               <View className="flex-row flex-wrap items-center gap-3">
                 {[
-                  { icon: 'check-circle', text: '六年之约打卡354天' },
-                  { icon: 'check-circle', text: '坚持戒涩60天' },
-                  { icon: 'clock-outline', text: '今天已记录' },
+                  {
+                    icon: 'check-circle' as const,
+                    text: `${planDetail?.title}最长坚持${planDetail?.postiveLongestCheckedDays}天`,
+                  },
+                  {
+                    icon: 'check-circle' as const,
+                    text: `已坚持${planDetail?.postiveLatestConsutiveCheckedDays}天`,
+                  },
+                  {
+                    icon: 'clock-outline' as const,
+                    text: todayChecked ? '今天已记录' : '今天未记录',
+                  },
                 ].map((item, index) => (
                   <View
                     key={index}
@@ -157,36 +241,34 @@ export default function Home() {
             <View className="mt-4 rounded-2xl border border-[#8AB86E] bg-white p-4">
               <View className="flex-row justify-around">
                 <StatCard
-                  value="30"
-                  label="累计总数"
+                  value={planDetail?.checkedDays.length.toString() ?? '0'}
+                  label="累计打卡"
                   icon={
-                    <MaterialCommunityIcons
-                      name="chart-bar"
+                    <Ionicons
+                      name="stats-chart-outline"
                       size={20}
                       color="#666"
                     />
                   }
                 />
                 <StatCard
-                  value="3"
+                  value={
+                    planDetail?.postiveCheckedDays.length.toString() ?? '0'
+                  }
+                  label="累计坚持"
+                  icon={
+                    <Ionicons
+                      name="checkmark-circle-outline"
+                      size={20}
+                      color="#666"
+                    />
+                  }
+                />
+                <StatCard
+                  value={(lastWeekCheckedCount / 7).toFixed(1)}
                   label="上周日均"
                   icon={
-                    <MaterialCommunityIcons
-                      name="chart-timeline-variant"
-                      size={20}
-                      color="#666"
-                    />
-                  }
-                />
-                <StatCard
-                  value="4"
-                  label="单日最高"
-                  icon={
-                    <MaterialCommunityIcons
-                      name="trending-up"
-                      size={20}
-                      color="#666"
-                    />
+                    <Ionicons name="analytics-outline" size={20} color="#666" />
                   }
                 />
               </View>
@@ -210,6 +292,7 @@ export default function Home() {
 
       <QuickNotes
         ref={quickNotesRef}
+        planEmoji={planDetail?.coverEmoji ?? '🦌'}
         onClose={handleQuickNotesClose}
         onConfirm={handleQuickNotesConfirm}
       />

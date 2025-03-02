@@ -103,6 +103,7 @@ export const NumericRadioButton = <T,>({
 interface QuickNotesProps {
   onClose: () => void;
   onConfirm: (note: NoteData, date: Date) => void;
+  planEmoji: string;
 }
 
 interface QuickNotesMethods {
@@ -116,7 +117,7 @@ interface QuickNotesMethods {
 }
 
 const QuickNotes = forwardRef(
-  ({ onClose, onConfirm }: QuickNotesProps, ref) => {
+  ({ onClose, onConfirm, planEmoji }: QuickNotesProps, ref) => {
     const [presenting, setPresenting] = useState(false);
     const bottomSheetRef = useRef<BottomSheetModal>(null);
 
@@ -124,7 +125,7 @@ const QuickNotes = forwardRef(
       defaultValues: {
         note: '',
         record: {
-          mode: 'limit',
+          mode: 'Positive',
           count: null,
         },
       },
@@ -341,19 +342,19 @@ const QuickNotes = forwardRef(
                         optional={true}
                       >
                         <RadioButton
-                          label="戒🦌"
-                          value="limit"
+                          label={`戒${planEmoji}`}
+                          value="Positive"
                           activeColor="#84AB62"
                           activeTextColor="#ffffff"
                           color="#F5F5F5"
                         />
                         <NumericRadioButton
-                          label="开🦌"
+                          label={`开${planEmoji}`}
                           count={value?.count ?? 0}
                           onCountChange={(v, c) =>
                             onChange({ mode: v, count: c })
                           }
-                          value="exhaustive"
+                          value="Negative"
                           activeColor="#84AB62"
                           activeTextColor="#ffffff"
                           color="#F5F5F5"

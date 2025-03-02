@@ -1,12 +1,16 @@
+import { client } from '@/api';
+import { useMyPlanCheckedDays } from '@/api/plan/usePlanChecked';
 import React, {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useReducer,
+  useRef,
+  useState,
 } from 'react';
 
-export type RecordMode = 'limit' | 'exhaustive';
+export type RecordMode = 'Positive' | 'Negative';
 
 export interface CheckInRecord {
   date: Date;
@@ -30,7 +34,11 @@ export interface CheckInRecords {
 interface CheckInState extends CheckInRecords {}
 
 interface CheckInContextType extends CheckInState {
-  getBetween: (start: Date, end?: Date) => CheckInRecord[];
+  getBetween: (
+    planId: string,
+    start: Date,
+    end?: Date,
+  ) => Promise<CheckInRecord[]>;
   getRecord: (date: Date) => CheckInRecord | undefined;
   setRecord: (record: CheckInStateSetAction['payload']) => void;
   deleteRecord: (date: Date) => void;
@@ -58,13 +66,13 @@ type CheckInStateAction =
 
 const initialState: CheckInState = {
   stats: {
-    limit: 0,
-    exhaustive: 0,
+    Positive: 0,
+    Negative: 0,
   },
   data: [],
   theme: {
-    limit: '#8AB86E',
-    exhaustive: '#FF6B6B',
+    Positive: '#8AB86E',
+    Negative: '#FF6B6B',
   },
 };
 
@@ -114,6 +122,7 @@ const setRecord = (state: CheckInState, action: CheckInStateSetAction) => {
   const newMode = action.payload.record.mode;
   const originalCount = state.data[index]?.record.count;
   const newCount = action.payload.record.count;
+  console.log(index, prefix, originalMode, newMode, originalCount, newCount);
   if (index !== -1) {
     // Existing record
     if (newMode === originalMode && newCount === originalCount) {
@@ -195,40 +204,54 @@ const CheckInContext = createContext<CheckInContextType | undefined>(undefined);
 export function CheckInProvider({ children }: { children: React.ReactNode }) {
   const [records, dispatch] = useReducer(checkInStateReducer, initialState);
 
-  useEffect(() => {
-    dispatch({
-      type: 'init',
-      payload: Array.from({ length: 365 }, (_, index) => {
-        const mode =
-          Math.random() < 0.5 ? ('limit' as const) : ('exhaustive' as const);
-        return {
-          date: new Date(Date.UTC(2025, 0, index + 1)),
-          record: {
-            mode,
-            count: mode === 'exhaustive' ? 1 : null,
-          },
-          note: [
-            '😅Ut ab tempore velit omnis itaque.',
-            'Blanditiis 🤏 vero blanditiis porro voluptatum ut.',
-            'Placeat iure 🦍 optio.',
-            'Corrupti voluptates placeat 🍠 nesciunt et qui voluptatem architecto nobis quia.',
-            'Qui optio quaerat commodi 🌝 est nisi distinctio eos est mollitia.',
-            'Fugiat nesciunt nostrum. 🎃',
-            'Libero dolores et 🗿 blanditiis quidem repellendus et quas. Placeat consequatur quia ullam consectetur sed tenetur fuga alias. Ut repellendus ducimus. Quam excepturi cumque. Quas provident sint iusto maiores.',
-            'Aut earum 🈳 et aut enim. Ullam nam eaque cumque beatae consequatur excepturi. Sequi hic dolore iusto quibusdam sit. Mollitia itaque quam sint eos voluptas. Dolores incidunt illum fugiat atque voluptatem.',
-            '🇺🇳 Quidem sit magni dicta officiis sed et.\nDeleniti repudiandae quia dolore quia.\nVoluptate id exercitationem.',
-          ][Math.floor(Math.random() * 9)],
-        };
-      }).filter(() => Math.random() < 0.5),
-    });
-  }, []);
+  const lastYear = useRef<number>(NaN);
   const getBetween = useCallback(
-    (start: Date, end?: Date) => {
+    async (planId: string, start: Date, end?: Date) => {
+      if (start.getFullYear() !== end?.getFullYear()) {
+        console.error(
+          'WARN: getting between different year is not supported yet',
+        );
+        return [];
+      }
+      let newRecords = records;
+      if (start.getFullYear() !== lastYear.current) {
+        lastYear.current = start.getFullYear();
+        const { data } = await client<{ data: IGetSexLimitCheckedResponse }>({
+          method: 'GET',
+          url: `/plan/my/day-checked`,
+          params: {
+            planId,
+            year: start.getFullYear(),
+          },
+        });
+        dispatch({
+          type: 'init',
+          payload: data.planDayChecked.map((record) => ({
+            date: new Date(record.date),
+            record: {
+              mode: record.status,
+              count: record.checkedTimes,
+            },
+            note: 'TODO',
+          })),
+        });
+        newRecords = {
+          ...records,
+          data: data.planDayChecked.map((record) => ({
+            date: new Date(record.date),
+            record: {
+              mode: record.status,
+              count: record.checkedTimes,
+            },
+            note: 'TODO',
+          })),
+        };
+      }
       end =
         end ?? new Date(Date.UTC(start.getFullYear(), start.getMonth() + 1, 0));
-      const [, startIndex] = binarySearch(records.data, start);
-      const [, endIndex] = binarySearch(records.data, end);
-      return records.data.slice(startIndex, endIndex + 1);
+      const [, startIndex] = binarySearch(newRecords.data, start);
+      const [, endIndex] = binarySearch(newRecords.data, end);
+      return newRecords.data.slice(startIndex, endIndex + 1);
     },
     [records.data],
   );
@@ -276,5 +299,5 @@ export function useCheckIn() {
 }
 
 export const getModeTheme = (mode: RecordMode) => {
-  return mode === 'limit' ? '#8AB86E' : '#FF6B6B';
+  return mode === 'Positive' ? '#8AB86E' : '#FF6B6B';
 };
