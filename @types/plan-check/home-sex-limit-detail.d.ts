@@ -5,6 +5,7 @@ declare interface IGetSexLimitDetailResponse {
   coverAvatar: string | null;
   coverEmoji: string;
   color: string;
+  title: string;
   postiveLastestConsutiveEndDate: string;
   postiveLastestConsutiveStartDate: string;
   postiveLongestEndDate: string;
@@ -13,6 +14,40 @@ declare interface IGetSexLimitDetailResponse {
   postiveLongestCheckedDays: number;
   negativeLatestConsutiveCheckedDays: number;
   negativeLongestCheckedDays: number;
+}
+
+declare interface IGetSexLimitCheckedResponse {
+  id: string;
+  coverAvatar: string;
+  coverEmoji: string;
+  color: string;
+  title: string;
+  desc: string;
+  school: string;
+  checkedDays: string[];
+  postiveCheckedDays: string[];
+  negativeCheckedDays: string[];
+  postiveLongestStartDate: string;
+  postiveLongestEndDate: string;
+  postiveLongestCheckedDays: number;
+  postiveLastestConsutiveStartDate: string;
+  postiveLastestConsutiveEndDate: string;
+  postiveLatestConsutiveCheckedDays: number;
+  negativeLongestStartDate: string;
+  negativeLongestEndDate: string;
+  negativeLongestCheckedDays: number;
+  negativeLastestConsutiveStartDate: string;
+  negativeLastestConsutiveEndDate: string;
+  negativeLatestConsutiveCheckedDays: number;
+  officalPlanType: string;
+  userId: number;
+  everdayShouldCheckTimes: number;
+  continuousCheckDay: number;
+  maxContinuousCheckDay: number;
+  createdAt: string;
+  updatedAt: string;
+  planDayChecked: CheckedDay[];
+  user: User;
 }
 
 interface PlanDayChecked {

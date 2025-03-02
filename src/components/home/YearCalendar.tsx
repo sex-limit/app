@@ -18,32 +18,58 @@ interface YearCalendarProps {
   onToggleDay: (day: number) => void;
 }
 
-const StatsRow = ({ checkedDays, year, month }: any) => (
-  <View className="mt-8 flex-row justify-between">
-    <View>
-      <Text className="text-sm text-[#666666]">完成天数</Text>
-      <Text className="mt-1 text-center text-2xl font-medium">
-        {checkedDays.size}
-      </Text>
+// const StatsRow = ({ checkedDays:  Map<string, CheckInRecord>, year: number, month: number }: any) => {
+const StatsRow = ({
+  checkedDays,
+  year,
+  month,
+}: {
+  checkedDays: Map<string, CheckInRecord>;
+  year: number;
+  month: number;
+}) => {
+  const { positiveCount, negativeCount, positiveDays, negativeDays } =
+    Array.from(checkedDays.values()).reduce(
+      (acc, cur) => {
+        if (cur.record.mode === 'Positive') {
+          acc.positiveCount += cur.record.count ?? 1;
+          acc.positiveDays += 1;
+        } else {
+          acc.negativeCount += cur.record.count ?? 1;
+          acc.negativeDays += 1;
+        }
+        return acc;
+      },
+      { positiveCount: 0, negativeCount: 0, positiveDays: 0, negativeDays: 0 },
+    );
+
+  return (
+    <View className="mt-8 flex-row justify-between">
+      <View>
+        <Text className="text-sm text-[#666666]">坚持天数</Text>
+        <Text className="mt-1 text-center text-2xl font-medium">
+          {positiveDays}
+        </Text>
+      </View>
+      <View>
+        <Text className="text-sm text-[#666666]">打卡次数</Text>
+        <Text className="mt-1 text-center text-2xl font-medium">
+          {positiveCount + negativeCount}
+        </Text>
+      </View>
+      <View>
+        <Text className="text-sm text-[#666666]">月完成率</Text>
+        <Text className="mt-1 text-center text-2xl font-medium">
+          {((checkedDays.size / getDaysInMonth(year, month)) * 100).toFixed(1)}%
+        </Text>
+      </View>
+      <View>
+        <Text className="text-sm text-[#666666]">小记数</Text>
+        <Text className="mt-1 text-center text-2xl font-medium">0</Text>
+      </View>
     </View>
-    <View>
-      <Text className="text-sm text-[#666666]">打卡次数</Text>
-      <Text className="mt-1 text-center text-2xl font-medium">
-        {checkedDays.size}
-      </Text>
-    </View>
-    <View>
-      <Text className="text-sm text-[#666666]">月完成率</Text>
-      <Text className="mt-1 text-center text-2xl font-medium">
-        {((checkedDays.size / getDaysInMonth(year, month)) * 100).toFixed(1)}%
-      </Text>
-    </View>
-    <View>
-      <Text className="text-sm text-[#666666]">小记数</Text>
-      <Text className="mt-1 text-center text-2xl font-medium">0</Text>
-    </View>
-  </View>
-);
+  );
+};
 
 export const YearCalendar = ({
   year,

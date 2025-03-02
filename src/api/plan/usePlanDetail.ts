@@ -4,7 +4,7 @@ import { createQuery } from 'react-query-kit';
 import { client } from '../common';
 
 type Variables = { year: number };
-type Response = IGetSexLimitDetailResponse;
+type Response = { data: IGetSexLimitDetailResponse };
 
 const useQuery = createQuery<Response, Variables, AxiosError>({
   queryKey: ['plan-detail'],
