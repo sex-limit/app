@@ -46,7 +46,7 @@ declare interface IGetSexLimitCheckedResponse {
   maxContinuousCheckDay: number;
   createdAt: string;
   updatedAt: string;
-  planDayChecked: CheckedDay[];
+  planDayChecked: PlanDayChecked[];
   user: User;
 }
 
@@ -59,6 +59,19 @@ interface PlanDayChecked {
   month: number;
   day: number;
   status: string;
+  createdAt: string;
+  updatedAt: string;
+  post: Post | null;
+}
+
+declare interface Post {
+  id: string;
+  content: string;
+  imgs: string[];
+  viewCount: number;
+  userId: number;
+  planId: string | null;
+  planDayCheckedId: string;
   createdAt: string;
   updatedAt: string;
 }

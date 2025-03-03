@@ -43,6 +43,7 @@ export type NoteData = {
   note: string;
   record: CheckInRecord['record'] | null;
   count?: number;
+  imgs: string[];
 };
 
 export interface NumericRadioButtonProps<T> extends RadioButtonProps<T> {
@@ -112,6 +113,7 @@ interface QuickNotesMethods {
     initialMode: RecordMode,
     initialNote: string,
     initialCount: number | null,
+    initialImages: string[],
   ) => void;
   dismiss: () => void;
 }
@@ -139,16 +141,20 @@ const QuickNotes = forwardRef(
 
     const [currentDate, setCurrentDate] = useState(new Date());
 
+    const [initialImages, setInitialImages] = useState<string[]>([]);
+
     const present = useCallback(
       (
         date: Date,
         initialMode: RecordMode,
         initialNote: string,
         initialCount: number | null = null,
+        initialImages: string[] = [],
         // eslint-disable-next-line max-params
       ) => {
         setValue('note', initialNote);
         setValue('record', { mode: initialMode, count: initialCount });
+        setInitialImages(initialImages);
         backdropOpacity.value = withDelay(
           300,
           withTiming(1, { duration: 100 }),
@@ -251,9 +257,17 @@ const QuickNotes = forwardRef(
       [getValues, setValue],
     );
 
+    const imgs = useRef<string[]>([]);
+
     const onSubmit = useCallback(
       (data: NoteData) => {
-        onConfirm(data, currentDate);
+        onConfirm(
+          {
+            ...data,
+            imgs: imgs.current,
+          },
+          currentDate,
+        );
         dismiss();
       },
       [currentDate, onConfirm, dismiss],
@@ -262,6 +276,7 @@ const QuickNotes = forwardRef(
     const inputScrollViewRef = useRef<ScrollView>(null);
     const handleImagePickerChange = useCallback(
       (images: string[], old: string[]) => {
+        imgs.current = images;
         if (images.length > old.length) {
           inputScrollViewRef.current?.scrollToEnd({ animated: true });
         }
@@ -329,6 +344,7 @@ const QuickNotes = forwardRef(
               <ImagePicker.Provider
                 limit={9}
                 onImagesChange={handleImagePickerChange}
+                initialImages={initialImages}
               >
                 <Controller
                   control={control}
