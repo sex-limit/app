@@ -18,7 +18,7 @@ export interface CheckInRecord {
     mode: RecordMode;
     count: number | null;
   };
-  note: string;
+  note: Partial<Post> | null;
 }
 
 export interface CheckInRecords {
@@ -229,10 +229,10 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
           payload: data.planDayChecked.map((record) => ({
             date: new Date(record.date),
             record: {
-              mode: record.status,
+              mode: record.status as RecordMode,
               count: record.checkedTimes,
             },
-            note: 'TODO',
+            note: record.post,
           })),
         });
         newRecords = {
@@ -240,10 +240,10 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
           data: data.planDayChecked.map((record) => ({
             date: new Date(record.date),
             record: {
-              mode: record.status,
+              mode: record.status as RecordMode,
               count: record.checkedTimes,
             },
-            note: 'TODO',
+            note: record.post,
           })),
         };
       }

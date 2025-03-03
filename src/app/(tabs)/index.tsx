@@ -113,6 +113,7 @@ export default function Home() {
       initialMode: RecordMode,
       initialNote: string,
       initialCount: number | null,
+      initialImgs?: string[],
       // eslint-disable-next-line max-params
     ) => {
       quickNotesRef.current?.present(
@@ -120,6 +121,7 @@ export default function Home() {
         initialMode,
         initialNote,
         initialCount,
+        initialImgs ?? [],
       );
     },
     [],
@@ -132,8 +134,9 @@ export default function Home() {
       handleQuickNotes(
         date,
         record?.record.mode ?? 'Positive',
-        record?.note ?? '',
+        record?.note.content ?? '',
         record?.record.count ?? null,
+        record?.note.imgs,
       );
     },
     [currentDate.year, currentDate.month, checkedDays, handleQuickNotes],
@@ -153,7 +156,7 @@ export default function Home() {
           date: date.toISOString(),
           quickPost: {
             content: note.note,
-            imgs: [],
+            imgs: note.imgs ?? [],
           },
         },
       });
@@ -169,14 +172,20 @@ export default function Home() {
         setRecord({
           date,
           record: note.record,
-          note: note.note,
+          note: {
+            content: note.note,
+            imgs: note.imgs ?? [],
+          },
         });
         setCheckedDays((prev) => {
           const newMap = new Map(prev);
           newMap.set(date.toISOString(), {
             date,
             record: note.record,
-            note: note.note,
+            note: {
+              content: note.note,
+              imgs: note.imgs ?? [],
+            },
           });
           return newMap;
         });
@@ -211,11 +220,11 @@ export default function Home() {
                 {[
                   {
                     icon: 'check-circle' as const,
-                    text: `${planDetail?.title}最长坚持${planDetail?.postiveLongestCheckedDays}天`,
+                    text: `${planDetail?.title ?? ''}最长坚持${planDetail?.postiveLongestCheckedDays ?? 0}天`,
                   },
                   {
                     icon: 'check-circle' as const,
-                    text: `已坚持${planDetail?.postiveLatestConsutiveCheckedDays}天`,
+                    text: `已坚持${planDetail?.postiveLatestConsutiveCheckedDays ?? 0}天`,
                   },
                   {
                     icon: 'clock-outline' as const,

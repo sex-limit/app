@@ -30,6 +30,7 @@ const ImagePickerContext = createContext<ImagePickerContextType>({
 
 interface ImagePickerProviderProps {
   limit?: number;
+  initialImages?: string[];
   children: React.ReactNode;
   onImagesChange?: (images: string[], old: string[]) => void;
 }
@@ -37,9 +38,10 @@ interface ImagePickerProviderProps {
 const ImagePickerProvider = ({
   limit = 1,
   children,
+  initialImages,
   onImagesChange,
 }: ImagePickerProviderProps) => {
-  const [imageUris, setImageUris] = useState<string[]>([]);
+  const [imageUris, setImageUris] = useState<string[]>(initialImages || []);
 
   const handleSetImageUris = (
     value: string[] | ((prev: string[]) => string[]),

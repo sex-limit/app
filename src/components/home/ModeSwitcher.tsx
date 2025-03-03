@@ -9,7 +9,7 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export const ModeSwitcher = () => {
-  const [mode, setMode] = useState<'limit' | 'exhaustive'>('limit');
+  const [mode, setMode] = useState<'Positive' | 'Negative'>('Positive');
   const leftArrowOffset = useSharedValue(0);
   const rightArrowOffset = useSharedValue(0);
 
@@ -30,7 +30,7 @@ export const ModeSwitcher = () => {
       withTiming(2, { duration: 150 }),
       withTiming(0, { duration: 150 }),
     );
-    setMode(mode === 'limit' ? 'exhaustive' : 'limit');
+    setMode(mode === 'Positive' ? 'Negative' : 'Positive');
   }, [mode, leftArrowOffset, rightArrowOffset, setMode]);
 
   return (
@@ -57,7 +57,7 @@ export const ModeSwitcher = () => {
           />
         </Animated.View>
       </View>
-      <Text className="ml-2">切换{mode === 'limit' ? '🪷' : '🦌'}模式</Text>
+      <Text className="ml-2">切换{mode === 'Positive' ? '🪷' : '🦌'}模式</Text>
     </TouchableOpacity>
   );
 };
