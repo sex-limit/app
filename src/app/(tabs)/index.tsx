@@ -20,7 +20,6 @@ import { client } from '@/api';
 
 export default function Home() {
   const today = new Date();
-  const [planId, setPlanId] = useState('1');
 
   const { setRecord, getBetween, deleteRecord } = useCheckIn();
   const [currentDate, setCurrentDate] = useState({
@@ -28,10 +27,10 @@ export default function Home() {
     month: today.getMonth(),
   });
 
-  const { data } = useMyPlanCheckedDays({
-    planId: planId,
+  const { data, planId } = useMyPlanCheckedDays({
     year: currentDate.year,
   });
+
   const planDetail = data?.data;
 
   const todayChecked = useMemo(() => {
@@ -146,6 +145,7 @@ export default function Home() {
 
   const handleQuickNotesConfirm = useCallback(
     async (note: NoteData, date: Date) => {
+      console.log(note, date);
       await client({
         method: 'POST',
         url: `/plan/check-in`,

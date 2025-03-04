@@ -22,8 +22,10 @@ const useQuery = createQuery<Response, Variables, AxiosError>({
 
 export const useMySexLimitPlanDetail = () => {
   const query = useQuery();
+  const planId = query.data?.data?.id;
 
   return {
     ...query,
+    planId,
   };
 };

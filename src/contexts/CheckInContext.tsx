@@ -1,14 +1,7 @@
 import { client } from '@/api';
 import { useMyPlanCheckedDays } from '@/api/plan/usePlanChecked';
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
+import { createGlobalStore } from 'hox';
+import React, { useCallback, useReducer, useRef } from 'react';
 
 export type RecordMode = 'Positive' | 'Negative';
 
@@ -33,7 +26,7 @@ export interface CheckInRecords {
 
 interface CheckInState extends CheckInRecords {}
 
-interface CheckInContextType extends CheckInState {
+interface CheckInStore extends CheckInState {
   getBetween: (
     planId: string,
     start: Date,
@@ -200,8 +193,7 @@ const checkInStateReducer = (
   }
 };
 
-const CheckInContext = createContext<CheckInContextType | undefined>(undefined);
-export function CheckInProvider({ children }: { children: React.ReactNode }) {
+function useCheckInStore(): CheckInStore {
   const [records, dispatch] = useReducer(checkInStateReducer, initialState);
 
   const lastYear = useRef<number>(NaN);
@@ -275,28 +267,16 @@ export function CheckInProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'delete_record', payload: date });
   }, []);
 
-  return (
-    <CheckInContext.Provider
-      value={{
-        ...records,
-        getBetween,
-        getRecord,
-        setRecord: handleSet,
-        deleteRecord: handleDelete,
-      }}
-    >
-      {children}
-    </CheckInContext.Provider>
-  );
+  return {
+    ...records,
+    getBetween,
+    getRecord,
+    setRecord: handleSet,
+    deleteRecord: handleDelete,
+  };
 }
 
-export function useCheckIn() {
-  const context = useContext(CheckInContext);
-  if (context === undefined) {
-    throw new Error('useCheckIn must be used within a CheckInProvider');
-  }
-  return context;
-}
+export const [useCheckIn] = createGlobalStore(useCheckInStore);
 
 export const getModeTheme = (mode: RecordMode) => {
   return mode === 'Positive' ? '#8AB86E' : '#FF6B6B';

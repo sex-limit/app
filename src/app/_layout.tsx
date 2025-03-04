@@ -13,11 +13,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import { APIProvider } from '@/api';
-import { CheckInProvider } from '@/contexts/CheckInContext';
 import { hydrateAuth, loadSelectedTheme } from '@/core';
 import { useThemeConfig } from '@/core/use-theme-config';
 import Douyin from '@/shared/native-module/douyin';
 import { FocusAwareStatusBar } from '@/ui';
+import { HoxRoot } from 'hox';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -48,11 +48,9 @@ function Providers({ children }: { children: React.ReactNode }) {
             <ThemeProvider value={theme}>
               <APIProvider>
                 <BottomSheetModalProvider>
-                  <CheckInProvider>
-                    <FocusAwareStatusBar translucent={true} />
-                    {children}
-                    <Toast />
-                  </CheckInProvider>
+                  <FocusAwareStatusBar translucent={true} />
+                  <HoxRoot>{children}</HoxRoot>
+                  <Toast />
                 </BottomSheetModalProvider>
               </APIProvider>
             </ThemeProvider>
@@ -65,13 +63,11 @@ function Providers({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <CheckInProvider>
-      <Providers>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-        </Stack>
-      </Providers>
-    </CheckInProvider>
+    <Providers>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+      </Stack>
+    </Providers>
   );
 }
 

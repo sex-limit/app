@@ -1,40 +1,29 @@
-import type { AxiosError } from 'axios';
-import { createQuery } from 'react-query-kit';
-
 import { client } from '../common';
+import { useQuery } from '@tanstack/react-query';
+import { useMySexLimitPlanDetail } from './usePlanDetail';
 
-type Variables = {
-  planId: string;
-  year: number;
-};
 type Response = { data: IGetSexLimitCheckedResponse };
 
-const useQuery = createQuery<Response, Variables, AxiosError>({
-  queryKey: ['plan-checked'],
-  fetcher: (params) => {
-    return client<Response>({
-      method: 'GET',
-      url: `/plan/my/day-checked`,
-      params,
-    });
-  },
-});
+export const useMyPlanCheckedDays = ({ year }: { year: number }) => {
+  const { planId } = useMySexLimitPlanDetail();
 
-export const useMyPlanCheckedDays = ({
-  planId,
-  year,
-}: {
-  planId: string;
-  year: number;
-}) => {
   const query = useQuery({
-    variables: {
-      planId,
-      year,
+    queryKey: ['plan-checked', year, planId],
+    queryFn: () => {
+      return client<Response>({
+        method: 'GET',
+        url: `/plan/my/day-checked`,
+        params: {
+          year,
+          planId,
+        },
+      });
     },
+    enabled: !!planId,
   });
 
   return {
     ...query,
+    planId,
   };
 };
