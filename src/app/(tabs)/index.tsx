@@ -145,7 +145,7 @@ export default function Home() {
 
   const handleQuickNotesConfirm = useCallback(
     async (note: NoteData, date: Date) => {
-      console.log(note, date);
+      console.log('planId', planId);
       await client({
         method: 'POST',
         url: `/plan/check-in`,

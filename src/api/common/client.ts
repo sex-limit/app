@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { Env } from '@env';
 import { getAuthToken } from '@/core';
+import { getRouterStore } from '@/contexts/router/router';
 
 export const AuthSymbol = 'AuthSymbol';
 
@@ -11,6 +12,12 @@ const clientImpl = axios.create({
 clientImpl.interceptors.response.use(
   (data) => data.data,
   (error: AxiosError) => {
+    const needReLogin = error.response?.status === 401;
+
+    if (needReLogin) {
+      getRouterStore()?.goAuth();
+    }
+
     console.log('request error', error.response?.data);
     throw error;
   },
