@@ -18,7 +18,7 @@ clientImpl.interceptors.response.use(
       getRouterStore()?.goAuth();
     }
 
-    console.log('request error', error.response?.data);
+    console.log('request error', error.response);
     throw error;
   },
 );

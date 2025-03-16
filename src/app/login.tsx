@@ -21,23 +21,20 @@ export default function Login() {
       <View className={'h-full justify-between'}>
         <View className={'mt-8 items-center justify-center'}>
           <Image
-            className={'h-24 w-24 rounded-2xl'}
+            className={'h-36 w-36 rounded-2xl'}
             source={require('@/ui/assets/logo/logo.png')}
           />
-          <Text className={'mt-4 text-2xl font-bold'}>鲁国</Text>
+          <Text className={'mt-4 text-2xl font-bold'}>鲁宇宙</Text>
           <Text className={'mt-2 text-gray-500'}>一句宣传语在这里</Text>
         </View>
 
-        <View className={'flex flex-col gap-y-4'}>
-          <View className={'mt-auto space-y-3 px-[5vw]'}>
-            <TiktokLogin />
-            <PhoneLogin />
+        <View className={'flex flex-1 flex-col gap-y-4 justify-between px-[2.5vw]'}>
+          <View className={'flex-1 justify-end mb-12'}>
+            <AppleLogin />
           </View>
 
-          <View className={'flex flex-row justify-center gap-x-4 pb-12'}>
-            {Platform.select({
-              ios: <AppleLogin />,
-            })}
+          {/* <View className={'flex flex-row justify-center gap-x-4 pb-12'}>
+
 
             <TouchableOpacity className={'items-center'}>
               <View
@@ -49,11 +46,11 @@ export default function Login() {
               </View>
               <Text className={'mt-1 text-xs text-gray-500'}>找回账号</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           <View className={'flex-row justify-center'}>
             <Text className={'text-xs text-gray-400'}>
-              我们的服务依赖于抖音、苹果、手机账号登录，请阅读
+              我们的服务依赖于苹果账号登录，请阅读
             </Text>
             <TouchableOpacity>
               <Text className={'text-xs text-blue-500'}>用户登录指引协议</Text>

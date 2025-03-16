@@ -15,9 +15,14 @@ import Toast from 'react-native-toast-message';
 import { APIProvider } from '@/api';
 import { hydrateAuth, loadSelectedTheme } from '@/core';
 import { useThemeConfig } from '@/core/use-theme-config';
-import Douyin from '@/shared/native-module/douyin';
 import { FocusAwareStatusBar } from '@/ui';
 import { HoxRoot } from 'hox';
+import GlobalBottomSheet from '@/ui/bottom-sheet/global';
+import FlashMessage from 'react-native-flash-message';
+
+// Hide the React Native refresh/hot reload banner
+// Hide the yellow box warnings
+
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -33,10 +38,6 @@ SplashScreen.preventAutoHideAsync();
 function Providers({ children }: { children: React.ReactNode }) {
   const theme = useThemeConfig();
 
-  useEffect(() => {
-    Douyin?.init('awcve1p71yemc3r7');
-  }, []);
-
   return (
     <GestureHandlerRootView
       style={styles.container}
@@ -49,8 +50,12 @@ function Providers({ children }: { children: React.ReactNode }) {
               <APIProvider>
                 <BottomSheetModalProvider>
                   <FocusAwareStatusBar translucent={true} />
-                  <HoxRoot>{children}</HoxRoot>
-                  <Toast />
+                  <HoxRoot>
+                    {children}
+                    <FlashMessage position="top" />
+                    <GlobalBottomSheet />
+                    <Toast />
+                  </HoxRoot>
                 </BottomSheetModalProvider>
               </APIProvider>
             </ThemeProvider>

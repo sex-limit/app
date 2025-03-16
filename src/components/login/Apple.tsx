@@ -5,7 +5,7 @@ import { TouchableOpacity, View } from 'react-native';
 
 import { AuthType, useLogin } from '@/api/auth/useLogin';
 import { useAuth } from '@/core/auth';
-import { Text } from '@/ui';
+import { Button, Text } from '@/ui';
 import { Icons } from '@/ui/icons/icons';
 
 export const AppleLogin = () => {
@@ -54,15 +54,16 @@ export const AppleLogin = () => {
   };
 
   return (
-    <TouchableOpacity
-      className="items-center"
+    <Button
       onPress={handleAppleLogin}
-      activeOpacity={0.7}
+      variant={'primary'}
+      text={'Apple'}
+      className={'py-2'}
     >
-      <View className="h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-        <Icons.Apple color={'#000'} size={24} />
+      <View className={'flex-row items-center gap-x-1'}>
+        <Icons.Apple color={'#fff'} size={36} />
+        <Text className="mt-1 text-md text-white font-medium">苹果登录</Text>
       </View>
-      <Text className="mt-1 text-xs text-gray-500">Apple</Text>
-    </TouchableOpacity>
+    </Button>
   );
 };

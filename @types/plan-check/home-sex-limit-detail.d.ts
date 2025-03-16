@@ -2,52 +2,21 @@ declare interface IGetSexLimitDetailResponse {
   planDayChecked: PlanDayChecked[];
   user: User;
   id: string;
-  coverAvatar: string | null;
-  coverEmoji: string;
-  color: string;
-  title: string;
-  postiveLastestConsutiveEndDate: string;
-  postiveLastestConsutiveStartDate: string;
-  postiveLongestEndDate: string;
-  postiveLongestStartDate: string;
-  postiveLatestConsutiveCheckedDays: number;
-  postiveLongestCheckedDays: number;
-  negativeLatestConsutiveCheckedDays: number;
-  negativeLongestCheckedDays: number;
-}
-
-declare interface IGetSexLimitCheckedResponse {
-  id: string;
-  coverAvatar: string;
+  coverAvatar: any;
   coverEmoji: string;
   color: string;
   title: string;
   desc: string;
-  school: string;
-  checkedDays: string[];
-  postiveCheckedDays: string[];
-  negativeCheckedDays: string[];
-  postiveLongestStartDate: string;
-  postiveLongestEndDate: string;
-  postiveLongestCheckedDays: number;
-  postiveLastestConsutiveStartDate: string;
   postiveLastestConsutiveEndDate: string;
+  postiveLastestConsutiveStartDate: string;
+  postiveLongestEndDate: string;
+  postiveLongestStartDate: string;
   postiveLatestConsutiveCheckedDays: number;
-  negativeLongestStartDate: string;
-  negativeLongestEndDate: string;
-  negativeLongestCheckedDays: number;
-  negativeLastestConsutiveStartDate: string;
-  negativeLastestConsutiveEndDate: string;
+  postiveLongestCheckedDays: number;
   negativeLatestConsutiveCheckedDays: number;
-  officalPlanType: string;
-  userId: number;
-  everdayShouldCheckTimes: number;
-  continuousCheckDay: number;
-  maxContinuousCheckDay: number;
-  createdAt: string;
-  updatedAt: string;
-  planDayChecked: PlanDayChecked[];
-  user: User;
+  negativeLongestCheckedDays: number;
+  negativeLastestConsutiveEndDate: string;
+  negativeLastestConsutiveStartDate: string;
 }
 
 interface PlanDayChecked {
@@ -61,16 +30,16 @@ interface PlanDayChecked {
   status: string;
   createdAt: string;
   updatedAt: string;
-  post: Post | null;
+  post: Post;
 }
 
-declare interface Post {
+interface Post {
   id: string;
   content: string;
   imgs: string[];
   viewCount: number;
   userId: number;
-  planId: string | null;
+  planId: any;
   planDayCheckedId: string;
   createdAt: string;
   updatedAt: string;
