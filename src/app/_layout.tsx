@@ -4,8 +4,7 @@ import '../../global.css';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { ThemeProvider } from '@react-navigation/native';
 import { SplashScreen, Stack } from 'expo-router';
-import React, { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { PaperProvider } from 'react-native-paper';
@@ -20,15 +19,21 @@ import { HoxRoot } from 'hox';
 import GlobalBottomSheet from '@/ui/bottom-sheet/global';
 import FlashMessage from 'react-native-flash-message';
 
-// Hide the React Native refresh/hot reload banner
-// Hide the yellow box warnings
-
-
 export { ErrorBoundary } from 'expo-router';
 
 export const unstable_settings = {
   initialRouteName: '(app)',
 };
+
+import * as Sentry from '@sentry/react-native';
+
+Sentry.init({
+  dsn: 'https://9bb3dabb3513db7dff9f835884e9f435@o4508985423036416.ingest.us.sentry.io/4508985423233024',
+
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+  tracesSampleRate: 0.75,
+});
 
 hydrateAuth();
 loadSelectedTheme();
@@ -40,7 +45,7 @@ function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <GestureHandlerRootView
-      style={styles.container}
+      style={{ flex: 1 }}
       className={theme.dark ? `dark` : undefined}
     >
       <PaperProvider>
@@ -66,7 +71,7 @@ function Providers({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+function App() {
   return (
     <Providers>
       <Stack screenOptions={{ headerShown: false }}>
@@ -76,8 +81,5 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+
+export default Sentry.wrap(App);

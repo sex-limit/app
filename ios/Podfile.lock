@@ -1,5 +1,6 @@
 PODS:
   - boost (1.84.0)
+  - Clarity (3.0.6)
   - DoubleConversion (1.1.6)
   - EXConstants (17.0.7):
     - ExpoModulesCore
@@ -1517,6 +1518,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-clarity (4.1.8):
+    - Clarity (= 3.0.6)
+    - React-Core
   - react-native-image-picker (8.1.0):
     - DoubleConversion
     - glog
@@ -2066,6 +2070,29 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNSentry (6.9.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Sentry/HybridSDK (= 8.45.0)
+    - Yoga
   - RNSVG (15.8.0):
     - React-Core
   - RNVectorIcons (10.2.0):
@@ -2097,6 +2124,7 @@ PODS:
     - SDWebImage (~> 5.10)
   - SDWebImageSVGCoder (1.7.0):
     - SDWebImage/Core (~> 5.6)
+  - Sentry/HybridSDK (8.45.0)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -2160,6 +2188,7 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - "react-native-clarity (from `../node_modules/@microsoft/react-native-clarity`)"
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-keyboard-controller (from `../node_modules/react-native-keyboard-controller`)
   - react-native-mmkv (from `../node_modules/react-native-mmkv`)
@@ -2199,12 +2228,14 @@ DEPENDENCIES:
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
+    - Clarity
     - libavif
     - libdav1d
     - MMKV
@@ -2212,6 +2243,7 @@ SPEC REPOS:
     - SDWebImage
     - SDWebImageAVIFCoder
     - SDWebImageSVGCoder
+    - Sentry
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -2330,6 +2362,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-clarity:
+    :path: "../node_modules/@microsoft/react-native-clarity"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
   react-native-keyboard-controller:
@@ -2408,6 +2442,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNSentry:
+    :path: "../node_modules/@sentry/react-native"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
@@ -2417,6 +2453,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
+  Clarity: fc3e44b276bf127686b5040871e31e242904977d
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   EXConstants: 30c43b9ca8391c31bab9cc45c97f16eddcf11042
   EXJSONUtils: 01fc7492b66c234e395dcffdd5f53439c5c29c93
@@ -2477,6 +2514,7 @@ SPEC CHECKSUMS:
   React-logger: ae95f0effa7e1791bd6f7283caddca323d4fbc1e
   React-Mapbuffer: 7eb5d69e1154e7743487ef0c8d7261e5b59afb32
   React-microtasksnativemodule: 16e31e4f503a5f46adafd035096130418c3bce70
+  react-native-clarity: 2aec33646aeb304d893929b5e43b1025fb0194aa
   react-native-image-picker: 4c89644bace3124af94bbaea7dfe10c572c7829c
   react-native-keyboard-controller: 7d22c56345d4ca825c9f2940b9636e0c2697d0df
   react-native-mmkv: f84bf6f48c906911695f9cd16d39d4fb78fcd5a4
@@ -2516,11 +2554,13 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: 00ba111b82aa266bb3ee1aa576831c2ea9a9dfad
   RNReanimated: 66cf0f600a26d2b5e74c6e0b1c77c1ab1f62fc05
   RNScreens: 4a5ab20b324ed1e3fe3862796b8f8e0a6208c415
+  RNSentry: 0a2b90ac4e85f8f28029edd3d76619a5eb0f46ba
   RNSVG: 8542aa11770b27563714bbd8494a8436385fc85f
   RNVectorIcons: 182892e7d1a2f27b52d3c627eca5d2665a22ee28
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
   SDWebImageAVIFCoder: 00310d246aab3232ce77f1d8f0076f8c4b021d90
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
+  Sentry: f7c0c4b82e2f7e5909a660544dfaff84e35d5e03
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: fcc198acd4a55599b3468cfb6ebc526baff5f06e
 

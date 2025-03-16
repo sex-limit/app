@@ -1,11 +1,10 @@
-import { FlatList, View, Text } from "react-native"
+import { View, Text } from "react-native"
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import React from "react";
-import { LinearGradient } from "expo-linear-gradient";
-import HomeHeaderDay from "./Day";
 import HomeScreenRecoverProgress from "./RecoverProgress";
-import MacronutrientSection from "./MacronutrientSection";
 import HomeHeaderActions from "./Actions";
+import { Button } from "@/ui";
+import * as Sentry from '@sentry/react-native';
 
 const HomeHeader: React.FC = () => {
 
@@ -34,6 +33,8 @@ const HomeHeader: React.FC = () => {
       <HomeScreenRecoverProgress />
 
       <HomeHeaderActions />
+
+
     </View>
   )
 }

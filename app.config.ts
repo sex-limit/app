@@ -70,6 +70,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     ['expo-apple-authentication'],
+    [
+      '@sentry/react-native/expo',
+      {
+        url: 'https://sentry.io/',
+        project: 'react-native',
+        organization: 'sex-limit',
+      },
+    ],
   ],
   extra: {
     ...ClientEnv,
